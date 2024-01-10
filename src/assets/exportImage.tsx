@@ -1,0 +1,11 @@
+const assets = "assets";
+export const curveShapePath = `${assets}/shape1.png`;
+export const defaultAvtPath = `${assets}/gordonramsay.jpg`;
+export const popoverPath = `${assets}/popoverHeader.jpg`;
+export const bannerPath = `${assets}/banner.jpg`;
+export const mealPlanImagePath = `${assets}/mealPlan.svg`;
+export const orderWhatYouNeedImagePath = `${assets}/orderWhatYouNeed.svg`;
+export const recipesOccasionsImagePath = `${assets}/recipesOccasions.svg`;
+export const saveRecipesImagePath = `${assets}/saveRecipes.svg`;
+export const bannerFootImagePath = `${assets}/banner1.jpg`;
+export const signInImagePath = `${assets}/signin.jpg`;

@@ -1,4 +1,4 @@
-import { AccountEntity } from "../AccountEntity/AccountEntity";
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
 
 export type PantryEntity = {
   id: number;

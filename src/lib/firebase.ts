@@ -1,4 +1,4 @@
-import { storage } from '@/firebase.config';
+import { tasteal_storage } from '@/tasteal_firebase.config';
 import { createCacheAsyncFunction } from '@/utils/cache';
 import { createDebugStringFormatter } from '@/utils/formatter';
 import {
@@ -19,7 +19,7 @@ const debugStringFormatter = createDebugStringFormatter(FIREBASE_IMGAGE);
  */
 export const resolveImagePathAsync = createCacheAsyncFunction(
   async (path: string): Promise<string> => {
-    const storageRef = ref(storage, path);
+    const storageRef = ref(tasteal_storage, path);
 
     try {
       const url = await getDownloadURL(storageRef);
@@ -43,7 +43,7 @@ export async function uploadImage(
   ...path: string[]
 ): Promise<string> {
   try {
-    const storageRef = ref(storage, path.join('/'));
+    const storageRef = ref(tasteal_storage, path.join('/'));
     const snapshot = await uploadBytes(storageRef, file);
     console.log(debugStringFormatter('Uploaded a blob or file!'), snapshot);
     return snapshot.ref.fullPath;
@@ -61,6 +61,6 @@ export async function uploadImage(
  * @return {Promise<void>} A promise that resolves when the image is deleted.
  */
 export async function deleteImage(...path: string[]): Promise<void> {
-  const storageRef = ref(storage, path.join('/'));
+  const storageRef = ref(tasteal_storage, path.join('/'));
   await deleteObject(storageRef);
 }

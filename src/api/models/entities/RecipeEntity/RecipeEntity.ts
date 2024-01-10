@@ -1,8 +1,8 @@
-import { AccountEntity } from '../AccountEntity/AccountEntity';
-import { IngredientEntity } from '../IngredientEntity/IngredientEntity';
-import { Nutrition_InfoEntity } from '../Nutrition_InfoEntity/Nutrition_InfoEntity';
-import { Recipe_DirectionEntity } from '../Recipe_DirectionEntity/Recipe_DirectionEntity';
-import { Recipe_OccasionEntity } from '../Recipe_OccasionEntity/Recipe_OccasionEntity';
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
+import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
+import { Nutrition_InfoEntity } from '@/api/models/entities/Nutrition_InfoEntity/Nutrition_InfoEntity';
+import { Recipe_DirectionEntity } from '@/api/models/entities/Recipe_DirectionEntity/Recipe_DirectionEntity';
+import { Recipe_OccasionEntity } from '@/api/models/entities/Recipe_OccasionEntity/Recipe_OccasionEntity';
 
 export type RecipeEntity = {
   id: number;

@@ -1,20 +1,13 @@
-import {
-  OccasionReq,
-  OccasionReqPut,
-} from '@/api/models/dtos/Request/OccasionReq/OccasionReq';
 import { OccasionEntity } from '@/api/models/entities/OccasionEntity/OccasionEntity';
 import { OccasionService } from '@/api/services/occasionService';
-import { AdminLayout } from '@/components/shared/layout';
+import { AdminOccasionForm, OccasionForm } from '@/components/features/admin';
 import { ImagePicker } from '@/components/shared/ui/files';
-import { FormTitle } from '@/components/shared/ui/labels';
-import { TastealTextField } from '@/components/shared/ui/textfields';
-import { storage } from '@/firebase.config';
+import { FormLabel, FormTitle } from '@/components/shared/ui/labels';
 import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
-import { StoragePath } from '@/lib/constants/storage';
-import { uploadImage } from '@/lib/firebase';
+import { deleteImage } from '@/lib/firebase';
+import { AdminOccasionHelper } from '@/lib/types/admin/occasions/AdminOccasionHelper';
 import { FormMode } from '@/lib/types/admin/shared';
-import { convertToSnakeCase } from '@/utils/string';
 import { ArrowBack, Close } from '@mui/icons-material';
 import {
   Button,
@@ -25,205 +18,26 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
-  FormLabel,
   Grid,
   IconButton,
+  Skeleton,
   Slide,
   Stack,
-  Switch,
   Typography,
 } from '@mui/material';
-import { getDownloadURL, ref } from 'firebase/storage';
-import { nanoid } from 'nanoid';
-import {
-  Dispatch,
-  FC,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import dayjs from 'dayjs';
+import { FC, useEffect, useMemo, useState } from 'react';
+
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-class OccasionReqCreator implements OccasionReq {
-  name: string;
-  description: string;
-  image?: string;
-  start_at: string;
-  end_at: string;
-  is_lunar_date: boolean;
-
-  start_at_date: Date;
-  end_at_date: Date;
-
-  constructor(
-    name: string = '',
-    description: string = '',
-    image: string = '',
-    start_at: string = '',
-    end_at: string = '',
-    is_lunar_date: boolean = false,
-    start_at_date?: Date,
-    end_at_date?: Date
-  ) {
-    this.name = name;
-    this.description = description;
-    this.image = image;
-    this.start_at = start_at || new Date().toISOString();
-    this.end_at = end_at || new Date().toISOString();
-    this.is_lunar_date = is_lunar_date;
-
-    if (start_at_date) {
-      this.start_at_date = start_at_date;
-    } else {
-      this.start_at_date = new Date();
-    }
-    if (end_at_date) {
-      this.end_at_date = end_at_date;
-    } else {
-      this.end_at_date = new Date();
-    }
-  }
-
-  async getReq(imageFile?: File): Promise<OccasionReq> {
-    if (!imageFile) {
-      throw new Error('image is required');
-    }
-    let imagePath = `${StoragePath.OCCASION}/${convertToSnakeCase(this.name)}`;
-
-    // check if image existed
-    let existed = false;
-    try {
-      const imageRef = ref(storage, imagePath);
-      const path = await getDownloadURL(imageRef);
-      if (path) existed = true;
-    } catch {
-      /* empty */
-    }
-    if (existed) {
-      imagePath = `${imagePath}-${nanoid()}`;
-    }
-
-    // upload image
-    this.image = await uploadImage(imageFile, imagePath);
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const req: OccasionReq = {
-      name: this.name,
-      description: this.description,
-      image: this.image,
-      start_at: this.start_at_date.toISOString(),
-      end_at: this.end_at_date.toISOString(),
-      is_lunar_date: this.is_lunar_date,
-    };
-    return req;
-  }
-  clone(): OccasionReqCreator {
-    return new OccasionReqCreator(
-      this.name,
-      this.description,
-      this.image,
-      this.start_at,
-      this.end_at,
-      this.is_lunar_date,
-      this.start_at_date,
-      this.end_at_date
-    );
-  }
-  static fromEntity(entity: OccasionEntity): OccasionReqPutCreator {
-    return new OccasionReqPutCreator(
-      entity.id,
-      entity.name,
-      entity.description,
-      entity.image,
-      entity.start_at.toISOString(),
-      entity.end_at.toISOString(),
-      entity.is_lunar_date,
-      entity.start_at,
-      entity.end_at
-    );
-  }
-}
-class OccasionReqPutCreator extends OccasionReqCreator {
-  id: number;
-
-  constructor(
-    id: number,
-    name: string = '',
-    description: string = '',
-    image: string = '',
-    start_at: string = '',
-    end_at: string = '',
-    is_lunar_date: boolean = false,
-    start_at_date?: Date,
-    end_at_date?: Date
-  ) {
-    super(
-      name,
-      description,
-      image,
-      start_at,
-      end_at,
-      is_lunar_date,
-      start_at_date,
-      end_at_date
-    );
-    this.id = id;
-  }
-
-  async getReq(imageFile?: File): Promise<OccasionReqPut> {
-    if (imageFile) {
-      let imagePath = this.image;
-      if (imagePath) {
-        this.image = await uploadImage(imageFile, imagePath);
-      } else {
-        imagePath = `${StoragePath.OCCASION}/${convertToSnakeCase(this.name)}`;
-        // check if image existed
-        let existed = false;
-        try {
-          const imageRef = ref(storage, imagePath);
-          const path = await getDownloadURL(imageRef);
-          if (path) existed = true;
-        } catch {
-          /* empty */
-        }
-        if (existed) {
-          imagePath = `${imagePath}-${nanoid()}`;
-        }
-
-        // upload image
-        this.image = await uploadImage(imageFile, imagePath);
-      }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const req: OccasionReqPut = {
-      id: this.id,
-      name: this.name,
-      description: this.description,
-      image: this.image,
-      start_at: this.start_at_date.toISOString(),
-      end_at: this.end_at_date.toISOString(),
-      is_lunar_date: this.is_lunar_date,
-    };
-    return req;
-  }
-  clone(): OccasionReqPutCreator {
-    return new OccasionReqPutCreator(
-      this.id,
-      this.name,
-      this.description,
-      this.image,
-      this.start_at,
-      this.end_at,
-      this.is_lunar_date,
-      this.start_at_date,
-      this.end_at_date
-    );
-  }
-}
-
-const DEFAULT_CREATE_OCCASION = new OccasionReqCreator();
+const DEFAULT_FORM: OccasionForm = {
+  name: '',
+  description: '',
+  start_at: dayjs(),
+  end_at: dayjs().add(7, 'day'),
+  is_lunar_date: false,
+  image: '',
+};
 
 const AdminOccasionsCreate: FC = () => {
   //#region Hooks
@@ -239,7 +53,8 @@ const AdminOccasionsCreate: FC = () => {
     if (!form || !('id' in form)) return;
 
     setMode('edit');
-    let path: string = PageRoute.Admin.Occasions.Edit;
+    setOldForm(form);
+    let path: string = PageRoute.Occasions.Edit(Number(id));
     path = path.replace(':id', form?.id?.toString() || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
@@ -247,7 +62,7 @@ const AdminOccasionsCreate: FC = () => {
     if (!id) return;
 
     setMode('view');
-    let path: string = PageRoute.Admin.Occasions.View;
+    let path: string = PageRoute.Occasions.View(Number(id));
     path = path.replace(':id', id || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
@@ -258,24 +73,27 @@ const AdminOccasionsCreate: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const handleNavigateBack = () => {
-    navigate(PageRoute.Admin.Occasions.Index);
+    navigate(PageRoute.Occasions.Index);
   };
 
   //#endregion
   //#region Form
 
-  const [createForm, setCreateForm] = useState<OccasionReqCreator>(
-    DEFAULT_CREATE_OCCASION
-  );
-  const [updateForm, setUpdateForm] = useState<OccasionReqPutCreator>();
-  const [viewForm, setViewForm] = useState<OccasionEntity>();
+  const [form, setForm] = useState<OccasionForm>(DEFAULT_FORM);
+
+  const [old, setOld] = useState<OccasionEntity>();
+  const [oldForm, setOldForm] = useState<OccasionForm>();
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setMode('create');
+      form !== DEFAULT_FORM && setForm(DEFAULT_FORM);
+      return;
+    }
 
     let active = true;
-    setLoading(true);
 
+    setLoading(true);
     (async () => {
       if (location.pathname.includes('edit')) {
         setMode('edit');
@@ -283,13 +101,15 @@ const AdminOccasionsCreate: FC = () => {
         setMode('view');
       }
       try {
+        console.log('run');
         const occasion = await OccasionService.GetOccasionById(parseInt(id));
+        console.log(occasion);
         if (!active) return;
-        setViewForm(occasion);
-        setUpdateForm(OccasionReqPutCreator.fromEntity(occasion));
+
+        setForm(AdminOccasionHelper.CreateFormObject(occasion));
+        setOld(occasion);
       } catch {
-        setViewForm(undefined);
-        setUpdateForm;
+        setForm(DEFAULT_FORM);
       } finally {
         setLoading(false);
       }
@@ -298,21 +118,8 @@ const AdminOccasionsCreate: FC = () => {
     return () => {
       active = false;
     };
-  }, [id, location.pathname]);
-
-  const [imageFile, setImageFile] = useState<File | null>(null);
-
-  const imageFileChange = (file: File) => {
-    setImageFile(file);
-  };
-
-  const [form, setForm] = useMemo(() => {
-    return mode === 'create'
-      ? [createForm, setCreateForm]
-      : mode === 'view'
-        ? [viewForm, setViewForm]
-        : [updateForm, setUpdateForm];
-  }, [createForm, mode, updateForm, viewForm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const validate = () => {
     if (!form.name) {
@@ -329,36 +136,45 @@ const AdminOccasionsCreate: FC = () => {
   const handleCreateSubmit = async () => {
     if (!validate()) return;
 
-    if (!imageFile) {
+    if (!form.image) {
       snackbarAlert('Vui lòng tải ảnh dịp lễ!', 'warning');
       return;
     }
 
-    setLoading(true);
-
+    setDisabled(true);
+    setProcessing(true);
+    let createdId = '';
     try {
-      const reqBody = await createForm.getReq(imageFile);
-      const occasion = await OccasionService.AddOccasion(reqBody);
-      switchModeToView(occasion.id.toString());
+      const reqBody = await AdminOccasionHelper.CreatePostReq(form);
+
+      const created = await OccasionService.AddOccasion(reqBody);
+      createdId = created.id.toString();
       snackbarAlert('Dịp thêm thành công!', 'success');
     } catch (err) {
       snackbarAlert('Dịp mới đã không được thêm!', 'warning');
       return;
     } finally {
-      setLoading(false);
+      setDisabled(false);
+      setProcessing(false);
+      if (!createdId) {
+        snackbarAlert('Dịp đã thêm nhưng id rỗng!');
+      }
+      switchModeToView(createdId);
     }
   };
 
   const handleUpdateSubmit = async () => {
+    if (!old) return;
     if (!validate()) return;
-    if (!form.image && !imageFile) {
+    if (!form.image) {
       snackbarAlert('Vui loại tải ảnh dịp lễ!', 'warning');
       return;
     }
 
-    setLoading(true);
+    setDisabled(true);
+    setProcessing(true);
     try {
-      const reqBody = await updateForm.getReq(imageFile);
+      const reqBody = await AdminOccasionHelper.CreatePutReq(form, old);
       await OccasionService.UpdateOccasion(reqBody);
 
       switchModeToView(id);
@@ -367,15 +183,34 @@ const AdminOccasionsCreate: FC = () => {
       console.log(err);
       snackbarAlert('Dịp đã không được cập nhật', 'warning');
     } finally {
-      setLoading(false);
+      setDisabled(false);
+      setProcessing(false);
     }
+  };
+
+  const handleCancelUpdate = () => {
+    if (!oldForm) return;
+
+    setForm(oldForm);
+    switchModeToView(id);
   };
 
   //#endregion
   //#region State
 
-  const disabled = mode === 'view';
+  const [disabled, setDisabled] = useState(false);
+  useEffect(() => {
+    if (mode === 'view') {
+      setDisabled(true);
+    } else {
+      setDisabled(false);
+    }
+  }, [mode]);
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const allDisabled = useMemo(() => {
+    return disabled || processing || loading;
+  }, [disabled, loading, processing]);
 
   //#endregion
   //#region Deletion
@@ -393,146 +228,160 @@ const AdminOccasionsCreate: FC = () => {
       return;
     }
 
-    setLoading(true);
-
+    setDisabled(true);
+    setProcessing(true);
     try {
-      await OccasionService.DeleteOccasion(Number(id));
+      const deleted = await OccasionService.DeleteOccasion(Number(id));
+      deleted.image && deleteImage(deleted.image);
       snackbarAlert('Dịp lễ đã được xóa thành công', 'success');
-      navigate(PageRoute.Admin.Occasions.Index);
+      navigate(PageRoute.Occasions.Index);
     } catch (err) {
       console.log(err);
       snackbarAlert('Dịp lễ đã không được xóa', 'warning');
     } finally {
-      setLoading(false);
+      setDisabled(false);
+      setProcessing(false);
     }
   };
 
   //#endregion
 
-  console.log(viewForm);
-
   return (
     <>
-      <AdminLayout>
-        <Stack alignItems={'start'} p={4} gap={4}>
-          <Stack direction="row" gap={1}>
-            <IconButton
-              sx={{
-                borderRadius: 4,
-                backgroundColor: 'primary.main',
-                color: 'primary.contrastText',
-                ':hover': {
-                  backgroundColor: 'primary.dark',
-                },
-              }}
-              onClick={handleNavigateBack}
-              disabled={loading}
-            >
-              <ArrowBack />
-            </IconButton>
-            <FormTitle>
-              {mode === 'create'
-                ? 'Thêm dịp'
-                : mode === 'edit'
-                  ? 'Sửa dịp'
-                  : 'Dịp'}
-            </FormTitle>
-          </Stack>
-          <Grid container columnSpacing={12}>
-            <Grid item xs={3}>
-              <Stack>
-                <FormLabel>Hình ảnh</FormLabel>
-                <ImagePicker
-                  file={imageFile}
-                  imagePath={form?.image || ''}
-                  onChange={imageFileChange}
-                  disabled={disabled || loading}
-                />
-              </Stack>
-            </Grid>
-            <Grid item xs={9}>
-              <Form
-                value={form}
-                setValue={setForm}
-                disabled={disabled}
-                loading={loading}
-              />
-            </Grid>
-          </Grid>
-
-          <Divider flexItem sx={{ opacity: 0.5 }} />
-
-          <Stack
-            direction="row"
-            justifyContent={'end'}
-            alignItems={'center'}
-            width="100%"
-            gap={1}
+      <Stack alignItems={'start'} p={4} gap={4}>
+        <Stack direction="row" gap={1}>
+          <IconButton
+            sx={{
+              borderRadius: 4,
+              backgroundColor: 'primary.main',
+              color: 'primary.contrastText',
+              ':hover': {
+                backgroundColor: 'primary.dark',
+              },
+            }}
+            onClick={handleNavigateBack}
+            disabled={loading || disabled}
           >
-            {mode === 'create' && (
-              <Button
-                variant="contained"
-                onClick={handleCreateSubmit}
-                sx={{ width: 240 }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <CircularProgress size={24} sx={{ color: 'white' }} />
-                ) : (
-                  'Thêm'
-                )}
-              </Button>
-            )}
-            {mode === 'view' && (
-              <Button
-                variant="contained"
-                color="error"
-                onClick={handleDeleteDialogOpen}
-                sx={{ width: 240 }}
-                disabled={loading}
-              >
-                Xóa
-              </Button>
-            )}
-            {mode === 'view' && (
-              <Button
-                variant="contained"
-                onClick={() => switchModeToEdit()}
-                sx={{ width: 240 }}
-                disabled={loading}
-              >
-                Cập nhật
-              </Button>
-            )}
-            {mode === 'edit' && (
-              <Button
-                variant="contained"
-                onClick={() => handleUpdateSubmit()}
-                sx={{ width: 240 }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <CircularProgress size={24} sx={{ color: 'white' }} />
-                ) : (
-                  'Cập nhật'
-                )}
-              </Button>
-            )}
-            {mode === 'edit' && (
-              <Button
-                variant="outlined"
-                sx={{
-                  width: 240,
-                }}
-                onClick={() => switchModeToView(id)}
-                disabled={loading}
-              >
-                Hủy
-              </Button>
-            )}
-          </Stack>
+            <ArrowBack />
+          </IconButton>
+          <FormTitle>
+            {mode === 'create'
+              ? 'Thêm dịp'
+              : mode === 'edit'
+                ? 'Sửa dịp'
+                : 'Dịp'}
+          </FormTitle>
         </Stack>
-      </AdminLayout>
+        <Grid container columnSpacing={12}>
+          <Grid item xs={3}>
+            <Stack>
+              <FormLabel>Hình ảnh</FormLabel>
+
+              {loading ? (
+                <Skeleton
+                  width="240px"
+                  height="240px"
+                  variant="rounded"
+                  animation="wave"
+                  sx={{
+                    borderRadius: 4,
+                  }}
+                />
+              ) : (
+                <ImagePicker
+                  file={form.image instanceof File ? form.image : null}
+                  imagePath={typeof form.image === 'string' ? form.image : ''}
+                  onChange={(file) => {
+                    setForm((prev) => ({ ...prev, image: file || '' }));
+                  }}
+                  disabled={disabled}
+                />
+              )}
+            </Stack>
+          </Grid>
+          <Grid item xs={9}>
+            <AdminOccasionForm
+              value={form}
+              setValue={setForm}
+              disabled={disabled}
+              loading={loading}
+            />
+          </Grid>
+        </Grid>
+
+        <Divider flexItem sx={{ opacity: 0.5 }} />
+
+        <Stack
+          direction="row"
+          justifyContent={'end'}
+          alignItems={'center'}
+          width="100%"
+          gap={1}
+        >
+          {mode === 'create' && (
+            <Button
+              variant="contained"
+              onClick={handleCreateSubmit}
+              sx={{ width: 240 }}
+              disabled={allDisabled}
+            >
+              {processing ? (
+                <CircularProgress size={24} sx={{ color: 'white' }} />
+              ) : (
+                'Thêm'
+              )}
+            </Button>
+          )}
+          {mode === 'view' && (
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleDeleteDialogOpen}
+              sx={{ width: 240 }}
+              disabled={processing || loading}
+            >
+              Xóa
+            </Button>
+          )}
+          {mode === 'view' && (
+            <Button
+              variant="contained"
+              onClick={() => switchModeToEdit()}
+              sx={{ width: 240 }}
+              disabled={processing || loading}
+            >
+              Cập nhật
+            </Button>
+          )}
+          {mode === 'edit' && (
+            <Button
+              variant="contained"
+              onClick={() => handleUpdateSubmit()}
+              sx={{ width: 240 }}
+              disabled={allDisabled}
+            >
+              {loading ? (
+                <CircularProgress size={24} sx={{ color: 'white' }} />
+              ) : (
+                'Cập nhật'
+              )}
+            </Button>
+          )}
+          {mode === 'edit' && (
+            <Button
+              variant="outlined"
+              sx={{
+                width: 240,
+              }}
+              onClick={() => handleCancelUpdate()}
+              disabled={loading || disabled}
+            >
+              Hủy
+            </Button>
+          )}
+        </Stack>
+      </Stack>
+
       <Dialog
         open={deleteDialogOpen}
         onClose={handleDeleteDialogClose}
@@ -563,8 +412,8 @@ const AdminOccasionsCreate: FC = () => {
         />
         <DialogContent>
           <DialogContentText>{`Dịp lễ "${
-            viewForm?.id || 'loading'
-          } - ${createForm?.name}" sẽ bị xóa!`}</DialogContentText>
+            form?.id || 'loading'
+          } - ${form?.name}" sẽ bị xóa!`}</DialogContentText>
         </DialogContent>
         <Divider
           sx={{
@@ -576,9 +425,9 @@ const AdminOccasionsCreate: FC = () => {
             variant="contained"
             color="error"
             onClick={handleDelete}
-            disabled={loading}
+            disabled={processing}
           >
-            {loading ? (
+            {processing ? (
               <CircularProgress size={24} sx={{ color: 'white' }} />
             ) : (
               'Xóa'
@@ -587,172 +436,13 @@ const AdminOccasionsCreate: FC = () => {
           <Button
             variant="contained"
             onClick={handleDeleteDialogClose}
-            disabled={loading}
+            disabled={processing}
           >
             Hủy
           </Button>
         </DialogActions>
       </Dialog>
     </>
-  );
-};
-
-type FormProps = {
-  value: OccasionReqCreator | OccasionEntity;
-  setValue:
-    | Dispatch<SetStateAction<OccasionReqCreator>>
-    | Dispatch<SetStateAction<OccasionEntity>>;
-  disabled?: boolean;
-  loading?: boolean;
-};
-const Form: FC<FormProps> = ({
-  value,
-  setValue,
-  disabled = false,
-  loading,
-}) => {
-  return (
-    <Stack gap={2}>
-      <Stack>
-        <FormLabel>Tên dịp lễ</FormLabel>
-        <TastealTextField
-          placeholder="Tết"
-          value={value?.name || ''}
-          onChange={(e) =>
-            setValue((prev) => {
-              if (
-                prev instanceof OccasionReqCreator ||
-                prev instanceof OccasionReqPutCreator
-              ) {
-                const clone = prev.clone();
-                clone.name = e.target.value;
-                return clone;
-              }
-              return {
-                ...prev,
-                name: e.target.value,
-              };
-            })
-          }
-          disabled={disabled || loading}
-        />
-      </Stack>
-      <Stack>
-        <FormLabel>Mô tả</FormLabel>
-        <TastealTextField
-          value={value?.description || ''}
-          onChange={(e) =>
-            setValue((prev) => {
-              if (
-                prev instanceof OccasionReqCreator ||
-                prev instanceof OccasionReqPutCreator
-              ) {
-                const clone = prev.clone();
-                clone.description = e.target.value;
-                return clone;
-              }
-              return {
-                ...prev,
-                description: e.target.value,
-              };
-            })
-          }
-          disabled={disabled || loading}
-          placeholder="Tết là một ngày lễ tuyệt vời..."
-          multiline
-          rows={4}
-        />
-      </Stack>
-      <Stack>
-        <Grid container columnSpacing={2}>
-          <Grid item xs={6}>
-            <FormLabel>Bắt đầu vào</FormLabel>
-            <DatePicker
-              value={dayjs(
-                value instanceof OccasionReqCreator ||
-                  value instanceof OccasionReqPutCreator
-                  ? value?.start_at_date || new Date()
-                  : value?.start_at || new Date()
-              )}
-              onChange={(value) =>
-                setValue((prev) => {
-                  if (
-                    prev instanceof OccasionReqCreator ||
-                    prev instanceof OccasionReqPutCreator
-                  ) {
-                    const clone = prev.clone();
-                    console.log(value);
-                    clone.start_at_date = value.toDate();
-                    return clone;
-                  }
-                  console.log('run');
-                  return {
-                    ...prev,
-                    start_at: value.toISOString(),
-                  };
-                })
-              }
-              disabled={disabled || loading}
-              sx={{ width: '100%' }}
-              format="DD/MM/YYYY"
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <FormLabel>Kết thúc vào</FormLabel>
-            <DatePicker
-              value={dayjs(
-                value instanceof OccasionReqCreator ||
-                  value instanceof OccasionReqPutCreator
-                  ? value?.end_at_date || new Date()
-                  : value?.end_at || new Date()
-              )}
-              onChange={(value) =>
-                setValue((prev) => {
-                  if (
-                    prev instanceof OccasionReqCreator ||
-                    prev instanceof OccasionReqPutCreator
-                  ) {
-                    const clone = prev.clone();
-                    clone.end_at_date = value.toDate();
-                    return clone;
-                  }
-                  return {
-                    ...prev,
-                    end_at: value.toISOString(),
-                  };
-                })
-              }
-              disabled={disabled || loading}
-              sx={{ width: '100%' }}
-              format="DD/MM/YYYY"
-            />
-          </Grid>
-        </Grid>
-      </Stack>
-      <Stack>
-        <FormLabel>Dùng ngày âm</FormLabel>
-        <Switch
-          value={value?.is_lunar_date || false}
-          onChange={(_, checked) =>
-            setValue((prev) => {
-              if (
-                value instanceof OccasionReqCreator ||
-                value instanceof OccasionReqPutCreator
-              ) {
-                const clone = prev.clone();
-                clone.is_lunar_date = checked;
-                return clone;
-              }
-              return {
-                ...prev,
-                is_lunar_date: checked,
-              };
-            })
-          }
-          disabled={disabled || loading}
-        />
-      </Stack>
-    </Stack>
   );
 };
 

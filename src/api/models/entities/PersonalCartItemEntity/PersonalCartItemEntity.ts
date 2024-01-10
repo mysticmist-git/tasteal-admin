@@ -1,6 +1,6 @@
-import { AccountEntity } from '../AccountEntity/AccountEntity';
-import { Cart_ItemEntity } from '../Cart_ItemEntity/Cart_ItemEntity';
-import { IngredientEntity } from '../IngredientEntity/IngredientEntity';
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
+import { Cart_ItemEntity } from '@/api/models/entities/Cart_ItemEntity/Cart_ItemEntity';
+import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
 
 export type PersonalCartItemEntity = {
   id: number;

@@ -1,10 +1,10 @@
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
 import {
   DocumentData,
   FirestoreDataConverter,
   QueryDocumentSnapshot,
   SnapshotOptions,
 } from 'firebase/firestore';
-import { AccountEntity } from '../AccountEntity/AccountEntity';
 
 type Message = {
   id: string;
@@ -48,5 +48,5 @@ const chatConverter: FirestoreDataConverter<Chat> = {
 };
 
 export default Chat;
-export type { Message, Chat };
 export { chatConverter };
+export type { Chat, Message };

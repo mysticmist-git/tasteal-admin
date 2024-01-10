@@ -1,4 +1,4 @@
-import { db } from '@/firebase.config';
+import { auth_db } from '@/auth_firebase.config';
 import {
   CollectionReference,
   DocumentReference,
@@ -25,7 +25,7 @@ export class ChatService {
 
   //#region UserChat
   private static getUserChatsRef(): CollectionReference<UserChat> {
-    return collection(db, this.collectionName.userChats).withConverter(
+    return collection(auth_db, this.collectionName.userChats).withConverter(
       userChatConverter
     );
   }
@@ -66,7 +66,7 @@ export class ChatService {
 
   public static async createUserChat(data: UserChat) {
     return await setDoc(
-      doc(db, this.collectionName.userChats, data.uid).withConverter(
+      doc(auth_db, this.collectionName.userChats, data.uid).withConverter(
         userChatConverter
       ),
       data
@@ -81,7 +81,7 @@ export class ChatService {
 
   //#region Chat
   private static getChatsRef(): CollectionReference<Chat> {
-    return collection(db, this.collectionName.chats).withConverter(
+    return collection(auth_db, this.collectionName.chats).withConverter(
       chatConverter
     );
   }
@@ -119,7 +119,9 @@ export class ChatService {
 
   public static async createChat(data: Chat) {
     return await setDoc(
-      doc(db, this.collectionName.chats, data.id).withConverter(chatConverter),
+      doc(auth_db, this.collectionName.chats, data.id).withConverter(
+        chatConverter
+      ),
       data
     );
   }

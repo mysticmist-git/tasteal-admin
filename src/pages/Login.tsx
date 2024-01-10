@@ -1,4 +1,4 @@
-import { auth } from '@/firebase.config';
+import { auth_auth } from '@/auth_firebase.config';
 import { useSnackbarService } from '@/hooks';
 import { Box, Button, Card, Stack, TextField, Typography } from '@mui/material';
 import validator from 'email-validator';
@@ -12,7 +12,7 @@ const Login = () => {
   const snackbarAlert = useSnackbarService();
   const navigate = useNavigate();
 
-  const [user, loading] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth_auth);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +26,7 @@ const Login = () => {
 
     try {
       // sign up with email password
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth_auth, email, password);
       navigate('/users');
     } catch (error) {
       if (!(error instanceof FirebaseError)) {

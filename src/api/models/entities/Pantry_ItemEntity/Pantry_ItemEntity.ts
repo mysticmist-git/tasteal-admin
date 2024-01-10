@@ -1,5 +1,5 @@
-import { IngredientEntity } from '../IngredientEntity/IngredientEntity';
-import { PantryEntity } from '../PantryEntity/PantryEntity';
+import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
+import { PantryEntity } from '@/api/models/entities/PantryEntity/PantryEntity';
 
 export type Pantry_ItemEntity = {
   id: number;
