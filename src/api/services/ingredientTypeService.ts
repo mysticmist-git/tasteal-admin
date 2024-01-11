@@ -1,4 +1,5 @@
 import { ApiEndPoint } from '@/api/lib/url';
+import { IngredientTypePostReq } from '@/api/models/dtos/Request/IngredientTypeReq/IngredientTypePostReq';
 import { Ingredient_TypeEntity } from '../models/entities/Ingredient_TypeEntity/Ingredient_TypeEntity';
 
 type CacheValue<T> = {
@@ -83,9 +84,7 @@ export class IngredientTypeService {
 
   public static async AddIngredientType({
     name,
-  }: {
-    name: Ingredient_TypeEntity['name'];
-  }): Promise<Ingredient_TypeEntity> {
+  }: IngredientTypePostReq): Promise<Ingredient_TypeEntity> {
     const requestOptions = {
       method: 'POST',
       headers: {

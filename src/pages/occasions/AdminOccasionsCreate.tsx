@@ -260,7 +260,7 @@ const AdminOccasionsCreate: FC = () => {
               },
             }}
             onClick={handleNavigateBack}
-            disabled={loading || disabled}
+            disabled={loading || processing}
           >
             <ArrowBack />
           </IconButton>
@@ -360,7 +360,7 @@ const AdminOccasionsCreate: FC = () => {
               sx={{ width: 240 }}
               disabled={allDisabled}
             >
-              {loading ? (
+              {processing ? (
                 <CircularProgress size={24} sx={{ color: 'white' }} />
               ) : (
                 'Cập nhật'

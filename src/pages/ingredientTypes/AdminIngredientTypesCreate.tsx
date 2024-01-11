@@ -1,13 +1,14 @@
-import {
-  CreateIngredientTypeReq,
-  UpdateIngredientTypeReq,
-} from '@/api/models/dtos/Request/Recipe_IngredientTypeReq/Recipe_IngredientTypeReq';
 import { Ingredient_TypeEntity } from '@/api/models/entities/Ingredient_TypeEntity/Ingredient_TypeEntity';
 import { IngredientTypeService } from '@/api/services/ingredientTypeService';
+import {
+  AdminIngredientTypeForm,
+  IngredientTypeForm,
+} from '@/components/features/admin';
 import { FormTitle } from '@/components/shared/ui/labels';
-import { TastealTextField } from '@/components/shared/ui/textfields';
 import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
+import { AdminIngredientTypeHelper } from '@/lib/types/admin/ingredientTypes/AdminIngredientTypeHelper';
+import { FormMode } from '@/lib/types/admin/shared';
 import { ArrowBack, Close } from '@mui/icons-material';
 import {
   Button,
@@ -18,25 +19,16 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
-  FormLabel,
   Grid,
   IconButton,
-  Skeleton,
   Slide,
   Stack,
   Typography,
 } from '@mui/material';
-import {
-  Dispatch,
-  FC,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-const DEFAULT_CREATE_OCCASION: CreateIngredientTypeReq = {
+const DEFAULT_FORM: IngredientTypeForm = {
   name: '',
 };
 
@@ -55,17 +47,17 @@ const AdminIngredientTypesCreate: FC = () => {
     if (!form || !('id' in form)) return;
 
     setMode('edit');
-    let path: string = PageRoute.Admin.IngredientTypes.Edit;
+    setOldForm(form);
+    let path: string = PageRoute.IngredientTypes.Edit(Number(id));
     path = path.replace(':id', form?.id?.toString() || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
-  const switchModeToView = (id?: number) => {
-    console.log(id);
+  const switchModeToView = (id?: string) => {
     if (!id) return;
 
     setMode('view');
-    let path: string = PageRoute.Admin.IngredientTypes.View;
-    path = path.replace(':id', id.toString() || '');
+    let path: string = PageRoute.IngredientTypes.View(Number(id));
+    path = path.replace(':id', id || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
 
@@ -75,24 +67,27 @@ const AdminIngredientTypesCreate: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const handleNavigateBack = () => {
-    navigate(PageRoute.Admin.IngredientTypes.Index);
+    navigate(PageRoute.IngredientTypes.Index);
   };
 
   //#endregion
   //#region Form
 
-  const [createForm, setCreateForm] = useState<CreateIngredientTypeReq>(
-    DEFAULT_CREATE_OCCASION
-  );
-  const [updateForm, setUpdateForm] = useState<UpdateIngredientTypeReq>();
-  const [viewForm, setViewForm] = useState<Ingredient_TypeEntity>();
+  const [form, setForm] = useState<IngredientTypeForm>(DEFAULT_FORM);
+
+  const [old, setOld] = useState<Ingredient_TypeEntity>();
+  const [oldForm, setOldForm] = useState<IngredientTypeForm>();
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setMode('create');
+      form !== DEFAULT_FORM && setForm(DEFAULT_FORM);
+      return;
+    }
 
     let active = true;
-    setLoading(true);
 
+    setLoading(true);
     (async () => {
       if (location.pathname.includes('edit')) {
         setMode('edit');
@@ -100,15 +95,15 @@ const AdminIngredientTypesCreate: FC = () => {
         setMode('view');
       }
       try {
-        const row = await IngredientTypeService.GetIngredientTypeById(
+        const occasion = await IngredientTypeService.GetIngredientTypeById(
           parseInt(id)
         );
         if (!active) return;
-        setViewForm(row);
-        setUpdateForm(row);
+
+        setForm(AdminIngredientTypeHelper.CreateFormObject(occasion));
+        setOld(occasion);
       } catch {
-        setViewForm(undefined);
-        setUpdateForm(undefined);
+        setForm(DEFAULT_FORM);
       } finally {
         setLoading(false);
       }
@@ -117,15 +112,8 @@ const AdminIngredientTypesCreate: FC = () => {
     return () => {
       active = false;
     };
-  }, [id, location.pathname]);
-
-  const [form, setForm] = useMemo(() => {
-    return mode === 'create'
-      ? [createForm, setCreateForm]
-      : mode === 'view'
-        ? [viewForm, setViewForm]
-        : [updateForm, setUpdateForm];
-  }, [createForm, mode, updateForm, viewForm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const validate = () => {
     if (!form.name) {
@@ -135,51 +123,74 @@ const AdminIngredientTypesCreate: FC = () => {
     return true;
   };
   const handleCreateSubmit = async () => {
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
-    setLoading(true);
-
+    setDisabled(true);
+    setProcessing(true);
+    let createdId = '';
     try {
-      const reqBody = { ...createForm };
-      const addedRow = await IngredientTypeService.AddIngredientType(reqBody);
-      switchModeToView(addedRow.id);
-      snackbarAlert('Loại nguyên liệu mới thêm thành công!', 'success');
+      const reqBody = await AdminIngredientTypeHelper.CreatePostReq(form);
+
+      const created = await IngredientTypeService.AddIngredientType(reqBody);
+      createdId = created.id.toString();
+      snackbarAlert('Loại nguyên liệu thêm thành công!', 'success');
     } catch (err) {
-      snackbarAlert('Loại nguyên liệu mới đã không được thêm!', 'warning');
+      snackbarAlert('Loại nguyên liệu đã không được thêm!', 'warning');
       return;
     } finally {
-      setLoading(false);
+      setDisabled(false);
+      setProcessing(false);
+      if (!createdId) {
+        snackbarAlert('Loại nguyên liệu đã thêm nhưng id trả về rỗng!');
+      }
+      switchModeToView(createdId);
     }
   };
 
   const handleUpdateSubmit = async () => {
-    if (!validate()) {
-      return;
-    }
+    if (!old) return;
+    if (!validate()) return;
 
-    setLoading(true);
-
+    setDisabled(true);
+    setProcessing(true);
     try {
-      const reqBody = { ...updateForm };
+      const reqBody = await AdminIngredientTypeHelper.CreatePutReq(form);
       await IngredientTypeService.UpdateIngredientType(reqBody);
 
-      switchModeToView(parseInt(id));
+      switchModeToView(id);
       snackbarAlert('Loại nguyên liệu cập nhật thành công!', 'success');
     } catch (err) {
       console.log(err);
       snackbarAlert('Loại nguyên liệu đã không được cập nhật', 'warning');
     } finally {
-      setLoading(false);
+      setDisabled(false);
+      setProcessing(false);
     }
+  };
+
+  const handleCancelUpdate = () => {
+    if (!oldForm) return;
+
+    setForm(oldForm);
+    switchModeToView(id);
   };
 
   //#endregion
   //#region State
 
-  const disabled = mode === 'view';
-  const [loading, setLoading] = useState<boolean>(false);
+  const [disabled, setDisabled] = useState(false);
+  useEffect(() => {
+    if (mode === 'view') {
+      setDisabled(true);
+    } else {
+      setDisabled(false);
+    }
+  }, [mode]);
+  const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const allDisabled = useMemo(() => {
+    return disabled || processing || loading;
+  }, [disabled, loading, processing]);
 
   //#endregion
   //#region Deletion
@@ -193,21 +204,22 @@ const AdminIngredientTypesCreate: FC = () => {
   };
   const handleDelete = async () => {
     if (!id) {
-      snackbarAlert('Nguyên liệu đã không được xóa', 'warning');
+      snackbarAlert('Loại nguyên liệu đã không được xóa', 'warning');
       return;
     }
 
-    setLoading(true);
-
+    setDisabled(true);
+    setProcessing(true);
     try {
       await IngredientTypeService.DeleteIngredientType(Number(id));
-      snackbarAlert('Nguyên liệu đã được xóa thành công', 'success');
-      navigate(PageRoute.Admin.IngredientTypes.Index);
+      snackbarAlert('Loại nguyên liệu đã được xóa thành công', 'success');
+      navigate(PageRoute.IngredientTypes.Index);
     } catch (err) {
       console.log(err);
-      snackbarAlert('Nguyên liệu đã không được xóa', 'warning');
+      snackbarAlert('Loại nguyên liệu đã không được xóa', 'warning');
     } finally {
-      setLoading(false);
+      setDisabled(false);
+      setProcessing(false);
     }
   };
 
@@ -227,7 +239,7 @@ const AdminIngredientTypesCreate: FC = () => {
               },
             }}
             onClick={handleNavigateBack}
-            disabled={loading}
+            disabled={loading || processing}
           >
             <ArrowBack />
           </IconButton>
@@ -241,7 +253,7 @@ const AdminIngredientTypesCreate: FC = () => {
         </Stack>
         <Grid container columnSpacing={12}>
           <Grid item xs={12}>
-            <Form
+            <AdminIngredientTypeForm
               value={form}
               setValue={setForm}
               disabled={disabled}
@@ -264,9 +276,9 @@ const AdminIngredientTypesCreate: FC = () => {
               variant="contained"
               onClick={handleCreateSubmit}
               sx={{ width: 240 }}
-              disabled={loading}
+              disabled={allDisabled}
             >
-              {loading ? (
+              {processing ? (
                 <CircularProgress size={24} sx={{ color: 'white' }} />
               ) : (
                 'Thêm'
@@ -279,7 +291,7 @@ const AdminIngredientTypesCreate: FC = () => {
               color="error"
               onClick={handleDeleteDialogOpen}
               sx={{ width: 240 }}
-              disabled={loading}
+              disabled={processing || loading}
             >
               Xóa
             </Button>
@@ -289,7 +301,7 @@ const AdminIngredientTypesCreate: FC = () => {
               variant="contained"
               onClick={() => switchModeToEdit()}
               sx={{ width: 240 }}
-              disabled={loading}
+              disabled={processing || loading}
             >
               Cập nhật
             </Button>
@@ -299,9 +311,9 @@ const AdminIngredientTypesCreate: FC = () => {
               variant="contained"
               onClick={() => handleUpdateSubmit()}
               sx={{ width: 240 }}
-              disabled={loading}
+              disabled={allDisabled}
             >
-              {loading ? (
+              {processing ? (
                 <CircularProgress size={24} sx={{ color: 'white' }} />
               ) : (
                 'Cập nhật'
@@ -314,15 +326,14 @@ const AdminIngredientTypesCreate: FC = () => {
               sx={{
                 width: 240,
               }}
-              onClick={() => switchModeToView(parseInt(id))}
-              disabled={loading}
+              onClick={() => handleCancelUpdate()}
+              disabled={loading || disabled}
             >
               Hủy
             </Button>
           )}
         </Stack>
       </Stack>
-
       <Dialog
         open={deleteDialogOpen}
         onClose={handleDeleteDialogClose}
@@ -340,7 +351,7 @@ const AdminIngredientTypesCreate: FC = () => {
             justifyContent={'space-between'}
             alignItems={'center'}
           >
-            <Typography typography={'h6'}>Xóa nguyên liệu</Typography>
+            <Typography typography={'h6'}>Xóa loại nguyên liệu</Typography>
             <IconButton onClick={handleDeleteDialogClose} disabled={loading}>
               <Close />
             </IconButton>
@@ -352,9 +363,9 @@ const AdminIngredientTypesCreate: FC = () => {
           }}
         />
         <DialogContent>
-          <DialogContentText>{`Nguyên liệu "${
-            viewForm?.id || 'loading'
-          } - ${viewForm?.name}" sẽ bị xóa!`}</DialogContentText>
+          <DialogContentText>{`Dịp lễ "${
+            form?.id || 'loading'
+          } - ${form?.name}" sẽ bị xóa!`}</DialogContentText>
         </DialogContent>
         <Divider
           sx={{
@@ -366,9 +377,9 @@ const AdminIngredientTypesCreate: FC = () => {
             variant="contained"
             color="error"
             onClick={handleDelete}
-            disabled={loading}
+            disabled={processing}
           >
-            {loading ? (
+            {processing ? (
               <CircularProgress size={24} sx={{ color: 'white' }} />
             ) : (
               'Xóa'
@@ -377,59 +388,13 @@ const AdminIngredientTypesCreate: FC = () => {
           <Button
             variant="contained"
             onClick={handleDeleteDialogClose}
-            disabled={loading}
+            disabled={processing}
           >
             Hủy
           </Button>
         </DialogActions>
       </Dialog>
     </>
-  );
-};
-
-type FormMode = 'create' | 'edit' | 'view';
-
-type FormProps = {
-  value:
-    | CreateIngredientTypeReq
-    | UpdateIngredientTypeReq
-    | Ingredient_TypeEntity;
-  setValue:
-    | Dispatch<SetStateAction<CreateIngredientTypeReq>>
-    | Dispatch<SetStateAction<UpdateIngredientTypeReq>>
-    | Dispatch<SetStateAction<Ingredient_TypeEntity>>;
-  disabled?: boolean;
-  loading?: boolean;
-};
-const Form: FC<FormProps> = ({
-  value,
-  setValue,
-  disabled = false,
-  loading = false,
-}) => {
-  return (
-    <Stack gap={2}>
-      <Stack>
-        <FormLabel>Tên loại nguyên liệu</FormLabel>
-        {loading && !disabled ? (
-          <Skeleton variant="rounded" animation="wave" width="100%">
-            <TastealTextField fullWidth />
-          </Skeleton>
-        ) : (
-          <TastealTextField
-            placeholder={loading ? 'loading...' : 'Tên loại nguyên này'}
-            value={value?.name || ''}
-            onChange={(e) =>
-              setValue((prev) => ({
-                ...prev,
-                name: e.target.value,
-              }))
-            }
-            disabled={disabled}
-          />
-        )}
-      </Stack>
-    </Stack>
   );
 };
 

@@ -1,9 +1,10 @@
+import { FormProps } from '@/components/features/admin';
 import { FormLabel } from '@/components/shared/ui/labels';
 import { TastealTextField } from '@/components/shared/ui/textfields';
 import { Grid, Skeleton, Stack, Switch } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs, { Dayjs } from 'dayjs';
-import { Dispatch, FC, SetStateAction } from 'react';
+import { FC } from 'react';
 
 export type OccasionForm = {
   id?: number;
@@ -15,14 +16,9 @@ export type OccasionForm = {
   image: string | File;
 };
 
-export type FormProps = {
-  value: OccasionForm;
-  setValue: Dispatch<SetStateAction<OccasionForm>>;
-  disabled?: boolean;
-  loading?: boolean;
-};
+export type AdminOccasionFormProps = FormProps<OccasionForm>;
 
-export const AdminOccasionForm: FC<FormProps> = ({
+export const AdminOccasionForm: FC<AdminOccasionFormProps> = ({
   value,
   setValue,
   disabled = false,
