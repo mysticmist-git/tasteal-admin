@@ -1,6 +1,6 @@
-import { IngredientEntity } from '@/lib/models/entities/IngredientEntity/IngredientEntity';
+import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
+import { PantryEntity } from '@/api/models/entities/PantryEntity/PantryEntity';
 import { PageReq } from '../PageReq/PageReq';
-import { PantryEntity } from '@/lib/models/entities/PantryEntity/PantryEntity';
 
 export type RecipesIngreAny = {
   ingredients: IngredientEntity['id'][];

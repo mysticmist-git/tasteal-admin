@@ -1,6 +1,6 @@
-import { RecipeEntity } from '@/lib/models/entities/RecipeEntity/RecipeEntity';
+import { RecipeEntity } from '@/api/models/entities/RecipeEntity/RecipeEntity';
+import { Recipe_IngredientEntity } from '@/api/models/entities/Recipe_IngredientEntity/Recipe_IngredientEntity';
 import { AuthorRes } from '../AuthorRes/AuthorRes';
-import { Recipe_IngredientEntity } from '@/lib/models/entities/Recipe_IngredientEntity/Recipe_IngredientEntity';
 
 export type RelatedRecipeRes = {
   id: RecipeEntity['id'];

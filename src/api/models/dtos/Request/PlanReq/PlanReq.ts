@@ -1,5 +1,5 @@
-import { AccountEntity } from '@/lib/models/entities/AccountEntity/AccountEntity';
-import { RecipeEntity } from '@/lib/models/entities/RecipeEntity/RecipeEntity';
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
+import { RecipeEntity } from '@/api/models/entities/RecipeEntity/RecipeEntity';
 
 export type PlanReq = {
   account_id: AccountEntity['uid'];

@@ -1,5 +1,5 @@
-import { AccountEntity } from '@/lib/models/entities/AccountEntity/AccountEntity';
-import { IngredientEntity } from '@/lib/models/entities/IngredientEntity/IngredientEntity';
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
+import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
 
 export type CreatePantryItemReq = {
   account_id: AccountEntity['uid'];

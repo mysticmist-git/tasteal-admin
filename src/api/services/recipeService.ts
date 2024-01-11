@@ -191,7 +191,7 @@ export class RecipeService {
   /**
    * Create a new recipe
    */
-  public static async CreateRecipe(postData: RecipeReq) {
+  public static async CreateRecipe(postData: RecipeReq): Promise<RecipeEntity> {
     return await fetch(ApiEndPoint.CreateRecipe(), {
       method: 'POST',
       headers: {
@@ -266,7 +266,10 @@ export class RecipeService {
       });
   }
 
-  public static async Update(recipeId: number, updateData: RecipeReq) {
+  public static async Update(
+    recipeId: number,
+    updateData: RecipeReq
+  ): Promise<boolean> {
     const res = await fetch(ApiEndPoint.UpdateRecipe(recipeId), {
       method: 'PUT',
       body: JSON.stringify(updateData),
@@ -275,12 +278,13 @@ export class RecipeService {
       },
     });
     if (res.ok) {
-      return res.json();
+      return true;
+    } else {
+      return false;
     }
-    throw new Error(res.statusText);
   }
 
-  public static async Delete(recipeId: number): Promise<boolean> {
+  public static async Delete(recipeId: number): Promise<RecipeEntity> {
     const requestOptions: RequestInit = {
       method: 'DELETE',
       headers: {

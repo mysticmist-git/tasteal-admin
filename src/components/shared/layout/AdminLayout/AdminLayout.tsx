@@ -1,5 +1,5 @@
-import { auth_auth } from "@/auth_firebase.config";
-import { PageRoute } from "@/lib/constants/common";
+import { auth_auth } from '@/auth_firebase.config';
+import { PageRoute } from '@/lib/constants/common';
 import {
   CalendarMonth,
   Category,
@@ -7,7 +7,8 @@ import {
   Home,
   InsertCommentRounded,
   PeopleAltRounded,
-} from "@mui/icons-material";
+  RamenDining,
+} from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -17,14 +18,14 @@ import {
   ListItemIcon,
   ListItemText,
   SxProps,
-} from "@mui/material";
-import { signOut } from "firebase/auth";
-import { FC, PropsWithChildren } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { AdminListButton } from "./components";
+} from '@mui/material';
+import { signOut } from 'firebase/auth';
+import { FC, PropsWithChildren } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { AdminListButton } from './components';
 
 const commonStyle: SxProps = {
-  height: "100vh",
+  height: '100vh',
 };
 
 const AdminLayout: FC<PropsWithChildren> = ({ children }) => {
@@ -46,7 +47,7 @@ const AdminLayout: FC<PropsWithChildren> = ({ children }) => {
           sx={{
             borderRadius: 4,
             p: 3,
-            textAlign: "right",
+            textAlign: 'right',
           }}
         >
           <Button variant="contained" onClick={handleLogout}>
@@ -62,13 +63,13 @@ const AdminLayout: FC<PropsWithChildren> = ({ children }) => {
           }}
         >
           <Box component="nav">
-            <ListItemButton onClick={() => navigate("/")}>
+            <ListItemButton onClick={() => navigate('/')}>
               <ListItemIcon>
                 <Home color="primary" />
               </ListItemIcon>
               <ListItemText
                 primaryTypographyProps={{
-                  variant: "h6",
+                  variant: 'h6',
                 }}
                 primary="Tasteal"
               />
@@ -83,16 +84,22 @@ const AdminLayout: FC<PropsWithChildren> = ({ children }) => {
             }}
           >
             <AdminListButton
+              Icon={RamenDining}
+              label="Công thức"
+              path={PageRoute.Recipes.Index}
+              selected={checkSelected('recipes')}
+            />
+            <AdminListButton
               Icon={Flatware}
               label="Nguyên liệu"
               path={PageRoute.Ingredients.Index}
-              selected={checkSelected("ingredients")}
+              selected={checkSelected('ingredients')}
             />
             <AdminListButton
               Icon={Category}
               label="Loại nguyên liệu"
               path={PageRoute.IngredientTypes.Index}
-              selected={checkSelected("ingredientTypes")}
+              selected={checkSelected('ingredientTypes')}
             />
             <AdminListButton
               Icon={CalendarMonth}

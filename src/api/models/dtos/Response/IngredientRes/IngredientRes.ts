@@ -1,5 +1,5 @@
-import { IngredientEntity } from '@/lib/models/entities/IngredientEntity/IngredientEntity';
-import { Recipe_IngredientEntity } from '@/lib/models/entities/Recipe_IngredientEntity/Recipe_IngredientEntity';
+import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
+import { Recipe_IngredientEntity } from '@/api/models/entities/Recipe_IngredientEntity/Recipe_IngredientEntity';
 
 export type IngredientRes = {
   id: IngredientEntity['id'];

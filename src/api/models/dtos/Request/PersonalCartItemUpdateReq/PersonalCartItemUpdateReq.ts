@@ -1,5 +1,5 @@
-import { Cart_ItemEntity } from '@/lib/models/entities/Cart_ItemEntity/Cart_ItemEntity';
-import { PersonalCartItemEntity } from '@/lib/models/entities/PersonalCartItemEntity/PersonalCartItemEntity';
+import { Cart_ItemEntity } from '@/api/models/entities/Cart_ItemEntity/Cart_ItemEntity';
+import { PersonalCartItemEntity } from '@/api/models/entities/PersonalCartItemEntity/PersonalCartItemEntity';
 
 export type PersonalCartItemUpdateReq = {
   id: PersonalCartItemEntity['id'];

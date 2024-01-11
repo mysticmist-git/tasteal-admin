@@ -9,6 +9,12 @@ export const DefaultPage = 1;
 
 export const PageRoute = {
   Index: "/",
+  Recipes: {
+    Index: "/recipes",
+    Create: "/recipes/create",
+    View: (id: number) => `/recipes/${id}`,
+    Edit: (id: number) => `/recipes/${id}/edit`,
+  },
   Ingredients: {
     Index: "/ingredients",
     Create: "/ingredients/create",

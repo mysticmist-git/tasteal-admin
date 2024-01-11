@@ -21,10 +21,10 @@ export class IngredientService {
    *
    * @return {Promise<IngredientEntity[]>} A promise that resolves with an array of IngredientEntity objects.
    */
-  public static async GetAll(
-    pageSize: number = 1000000,
+  public static GetAll(
+    pageSize: number = 12,
     page: number = 1
-  ): Promise<IngredientGetRes[]> {
+  ): Promise<IngredientEntity[]> {
     const requestOptions = {
       method: 'POST',
       headers: {
@@ -35,15 +35,10 @@ export class IngredientService {
         page: page,
       } as PageReq),
     };
-    return await fetch(ApiEndPoint.GetAllIngredients(), requestOptions)
+    return fetch(ApiEndPoint.GetAllIngredients(), requestOptions)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-
         return data.ingredients;
-      })
-      .catch((error) => {
-        console.log(error);
       });
   }
   public static async Get(
@@ -67,7 +62,7 @@ export class IngredientService {
       if (res.ok) {
         return res.json();
       }
-      throw new Error('Failed to get ingredients');
+      throw new Error(`Failed to get ingredients, ${res.statusText}`);
     });
   }
   public static async GetById(id: number): Promise<IngredientEntity> {
@@ -90,7 +85,10 @@ export class IngredientService {
       },
     };
     return await fetch(ApiEndPoint.DeleteIngredient(id), requestOptions)
-      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        return res.json();
+      })
       .then((data) => {
         console.log(data);
 

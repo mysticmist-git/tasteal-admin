@@ -1,5 +1,5 @@
-import { CookBookEntity } from '@/lib/models/entities/CookBookEntity/CookBookEntity';
-import { RecipeEntity } from '@/lib/models/entities/RecipeEntity/RecipeEntity';
+import { CookBookEntity } from '@/api/models/entities/CookBookEntity/CookBookEntity';
+import { RecipeEntity } from '@/api/models/entities/RecipeEntity/RecipeEntity';
 
 export type RecipeToCookBookReq = {
   cook_book_id: CookBookEntity['id'];

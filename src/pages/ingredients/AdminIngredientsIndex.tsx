@@ -1,4 +1,3 @@
-import { IngredientPagination } from '@/api/models/dtos/Response/IngredientRes/IngredientRes';
 import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
 import { Ingredient_TypeEntity } from '@/api/models/entities/Ingredient_TypeEntity/Ingredient_TypeEntity';
 import { IngredientService } from '@/api/services/ingredientService';
@@ -9,20 +8,6 @@ import { PageRoute } from '@/lib/constants/common';
 import { GridColDef } from '@mui/x-data-grid';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-type CacheValue<T> = {
-  time: number;
-  value: T;
-};
-const cache: Map<string, CacheValue<IngredientPagination>> = new Map();
-
-function createCacheKey(...args: unknown[]) {
-  return JSON.stringify(args);
-}
-function isCacheExpire(time: number) {
-  const expire = 5 * 60 * 1000;
-  return Date.now() - time > expire;
-}
 
 export const AdminIngredientsIndex: FC = () => {
   //#region Hooks
@@ -93,60 +78,23 @@ export const AdminIngredientsIndex: FC = () => {
   ];
 
   //#endregion
-  //#region Pagination
+  //#region Data
 
   const [rows, setRows] = useState<IngredientEntity[]>([]);
-  const [rowCount, setRowCount] = useState(0);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 10,
-  });
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     let active = true;
 
     (async () => {
       setLoading(true);
-      let pagination: IngredientPagination;
-      const key = createCacheKey(
-        paginationModel.page,
-        paginationModel.pageSize
-      );
-
-      let got = false;
-      if (cache.has(key)) {
-        const value = cache.get(key);
-        if (isCacheExpire(value!.time)) {
-          cache.delete(key);
-        } else {
-          pagination = value!.value;
-          got = true;
-        }
-      }
-
-      if (got) return;
 
       try {
-        pagination = await IngredientService.Get(
-          paginationModel.page + 1,
-          paginationModel.pageSize
-        );
-
-        cache.set(
-          createCacheKey(paginationModel.page, paginationModel.pageSize),
-          {
-            value: pagination,
-            time: Date.now(),
-          }
-        );
+        const rows = await IngredientService.GetAll(1000000);
 
         if (!active) return;
 
         setLoading(false);
-        setRows(pagination?.ingredients ?? []);
-        setRowCount(
-          pagination ? pagination.maxPage * paginationModel.pageSize : 0
-        );
+        setRows(rows ?? []);
       } catch (err) {
         console.log(err);
       }
@@ -155,7 +103,7 @@ export const AdminIngredientsIndex: FC = () => {
     return () => {
       active = false;
     };
-  }, [paginationModel, paginationModel.page, paginationModel.pageSize]);
+  }, []);
 
   //#endregion
   //#region Types
@@ -164,7 +112,6 @@ export const AdminIngredientsIndex: FC = () => {
     Ingredient_TypeEntity[]
   >([]);
   useEffect(() => {
-    cache.clear();
     let active = true;
 
     (async () => {
@@ -189,15 +136,12 @@ export const AdminIngredientsIndex: FC = () => {
     <CommonIndexPage
       title={'Nguyên liệu'}
       rows={rows}
-      paginationModel={paginationModel}
-      rowCount={rowCount}
       columns={columns}
       loading={loading}
       dialogProps={{
         title: 'Xóa nguyên liệu',
         content: 'Bạn có chắc muốn xóa nguyên liệu này?',
       }}
-      onPaginationModelChange={setPaginationModel}
       onCreateClick={handleCreateRow}
       onViewClick={handleViewRow}
       onDeleteClick={handleDeleteRow}

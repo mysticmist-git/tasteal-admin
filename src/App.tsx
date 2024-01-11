@@ -7,13 +7,15 @@ import AdminIngredientCreate from "@/pages/ingredients/AdminIngredientsCreate";
 import { AdminIngredientsIndex } from "@/pages/ingredients/AdminIngredientsIndex";
 import AdminOccasionsCreate from "@/pages/occasions/AdminOccasionsCreate";
 import { AdminOccasionsIndex } from "@/pages/occasions/AdminOccasionsIndex";
+import AdminRecipesCreate from "@/pages/recipes/AdminRecipesCreate";
+import { AdminRecipesIndex } from "@/pages/recipes/AdminRecipesIndex";
 import { SnackbarProvider } from "@/provider/SnackbarProvider";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import theme from "./theme";
 import AdminUsersIndex from "./pages/users/AdminUsersIndex";
+import theme from "./theme";
 import AdminUsersViewer from "./pages/users/AdminUsersViewer";
 
 const App = () => {
@@ -33,6 +35,30 @@ const App = () => {
                       </ProtectedRoute>
                     }
                   />
+
+                  <Route path={"/recipes"}>
+                    <Route
+                      index
+                      element={
+                        <ProtectedRoute>
+                          <AdminLayout>
+                            <AdminRecipesIndex />
+                          </AdminLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path=":id"
+                      element={
+                        <ProtectedRoute>
+                          <AdminLayout>
+                            <AdminRecipesCreate />
+                          </AdminLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
+
                   <Route path={"/ingredients"}>
                     <Route
                       index

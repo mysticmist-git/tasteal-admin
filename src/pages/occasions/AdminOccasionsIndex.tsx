@@ -36,11 +36,6 @@ export const AdminOccasionsIndex: FC = () => {
   //#region Pagination
 
   const [rows, setRows] = useState<OccasionEntity[]>([]);
-  const [rowCount, setRowCount] = useState(0);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 10,
-  });
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     let active = true;
@@ -59,7 +54,6 @@ export const AdminOccasionsIndex: FC = () => {
         if (!active) return;
 
         setRows(occasions.sort((a, b) => a.id - b.id));
-        setRowCount(occasions.length);
         setLoading(false);
       })();
     })();
@@ -67,7 +61,7 @@ export const AdminOccasionsIndex: FC = () => {
     return () => {
       active = false;
     };
-  }, [paginationModel, paginationModel.page, paginationModel.pageSize]);
+  }, []);
 
   //#endregion
 
@@ -107,9 +101,6 @@ export const AdminOccasionsIndex: FC = () => {
         title: 'Xóa dịp lễ',
         content: 'Bạn có chắc muốn xóa dịp lễ này?',
       }}
-      paginationModel={paginationModel}
-      rowCount={rowCount}
-      onPaginationModelChange={setPaginationModel}
       onCreateClick={handleCreateClick}
       onViewClick={handleViewClick}
       onDeleteClick={handleDeleteClick}
