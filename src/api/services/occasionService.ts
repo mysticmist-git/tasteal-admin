@@ -1,12 +1,11 @@
-import { ApiEndPoint } from '@/api/lib/url';
-import { occasions as occasionsSampleData } from '@/lib/constants/sampleData';
-import { deleteImage } from '@/lib/firebase';
-import { convertLunarToSolarDate } from '@/utils/string';
+import { ApiEndPoint } from "@/api/lib/url";
+import { occasions as occasionsSampleData } from "@/lib/constants/sampleData";
+import { convertLunarToSolarDate } from "@/utils/string";
 import {
   OccasionReq,
   OccasionReqPut,
-} from '../models/dtos/Request/OccasionReq/OccasionReq';
-import { OccasionEntity } from '../models/entities/OccasionEntity/OccasionEntity';
+} from "../models/dtos/Request/OccasionReq/OccasionReq";
+import { OccasionEntity } from "../models/entities/OccasionEntity/OccasionEntity";
 
 /**
  * Represents a service for managing occasions.
@@ -20,7 +19,7 @@ export class OccasionService {
   public static async GetAll(): Promise<OccasionEntity[]> {
     let result: OccasionEntity[] = [];
     const requestOptions = {
-      method: 'GET',
+      method: "GET",
     };
 
     await fetch(ApiEndPoint.GetOccasion(), requestOptions)
@@ -37,7 +36,7 @@ export class OccasionService {
               end_at,
             };
           })
-          .sort((a, b) => {
+          .sort((a: OccasionEntity, b: OccasionEntity) => {
             let startA = a.start_at;
             startA.setFullYear(new Date().getFullYear());
             let startB = b.start_at;
@@ -61,12 +60,12 @@ export class OccasionService {
     return result;
   }
   public static async GetOccasionById(
-    id: OccasionEntity['id']
+    id: OccasionEntity["id"]
   ): Promise<OccasionEntity> {
     const requestOptions: RequestInit = {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
+        "Content-Type": "application/json; charset=UTF-8",
       },
     };
 
@@ -85,9 +84,9 @@ export class OccasionService {
     newOccasion: OccasionReq
   ): Promise<OccasionEntity> {
     const requestOptions: RequestInit = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
+        "Content-Type": "application/json; charset=UTF-8",
       },
       body: JSON.stringify(newOccasion),
     };
@@ -101,9 +100,9 @@ export class OccasionService {
     updateOccasion: OccasionReqPut
   ): Promise<OccasionEntity> {
     const requestOptions: RequestInit = {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
+        "Content-Type": "application/json; charset=UTF-8",
       },
       body: JSON.stringify(updateOccasion),
     };
@@ -115,18 +114,18 @@ export class OccasionService {
         return data;
       })
       .catch((error) => {
-        console.error('Lỗi:', error);
+        console.error("Lỗi:", error);
         throw error;
       });
   }
 
   public static async DeleteOccasion(
-    id: OccasionEntity['id']
+    id: OccasionEntity["id"]
   ): Promise<OccasionEntity> {
     const requestOptions: RequestInit = {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
+        "Content-Type": "application/json; charset=UTF-8",
       },
     };
     return await fetch(ApiEndPoint.DeleteOccasion(id), requestOptions)
@@ -136,83 +135,83 @@ export class OccasionService {
         return data;
       })
       .catch((error) => {
-        console.error('Lỗi:', error);
+        console.error("Lỗi:", error);
         throw error;
       });
   }
 
-  public static async getCircleOccasion(): Promise<OccasionEntity[]> {
-    const TetId = 10;
-    let result: OccasionEntity[] = await this.GetAll().then((data) =>
-      data
-        .map((item: OccasionEntity) => {
-          let start_at = new Date(item.start_at);
-          let end_at = new Date(item.end_at);
-          if (item.id != TetId) {
-            start_at.setFullYear(new Date().getFullYear());
-            end_at.setFullYear(new Date().getFullYear());
-          }
-          if (item.is_lunar_date && item.id != TetId) {
-            start_at = convertLunarToSolarDate(start_at);
-            end_at = convertLunarToSolarDate(end_at);
-          }
-          return {
-            ...item,
-            start_at,
-            end_at,
-          };
-        })
-        .sort((a, b) => a.start_at.getTime() - b.start_at.getTime())
-    );
+  // public static async getCircleOccasion(): Promise<OccasionEntity[]> {
+  //   const TetId = 10;
+  //   let result: OccasionEntity[] = await this.GetAll().then((data) =>
+  //     data
+  //       .map((item: OccasionEntity) => {
+  //         let start_at = new Date(item.start_at);
+  //         let end_at = new Date(item.end_at);
+  //         if (item.id != TetId) {
+  //           start_at.setFullYear(new Date().getFullYear());
+  //           end_at.setFullYear(new Date().getFullYear());
+  //         }
+  //         if (item.is_lunar_date && item.id != TetId) {
+  //           start_at = convertLunarToSolarDate(start_at);
+  //           end_at = convertLunarToSolarDate(end_at);
+  //         }
+  //         return {
+  //           ...item,
+  //           start_at,
+  //           end_at,
+  //         };
+  //       })
+  //       .sort((a, b) => a.start_at.getTime() - b.start_at.getTime())
+  //   );
 
-    const tet: OccasionEntity = result.find((item) => item.id == TetId);
+  //   const tet: OccasionEntity = result.find((item) => item.id == TetId);
 
-    const start_at_1 = new Date(tet.start_at);
-    start_at_1.setFullYear(new Date().getFullYear() - 1);
-    const end_at_1 = new Date(tet.end_at);
-    end_at_1.setFullYear(new Date().getFullYear());
+  //   const start_at_1 = new Date(tet.start_at);
+  //   start_at_1.setFullYear(new Date().getFullYear() - 1);
+  //   const end_at_1 = new Date(tet.end_at);
+  //   end_at_1.setFullYear(new Date().getFullYear());
 
-    const start_at_2 = new Date(tet.start_at);
-    start_at_2.setFullYear(new Date().getFullYear());
-    const end_at_2 = new Date(tet.end_at);
-    end_at_2.setFullYear(new Date().getFullYear() + 1);
+  //   const start_at_2 = new Date(tet.start_at);
+  //   start_at_2.setFullYear(new Date().getFullYear());
+  //   const end_at_2 = new Date(tet.end_at);
+  //   end_at_2.setFullYear(new Date().getFullYear() + 1);
 
-    result = [
-      {
-        ...tet,
-        start_at: convertLunarToSolarDate(start_at_1),
-        end_at: convertLunarToSolarDate(end_at_1),
-      },
-      ...result.filter((item) => item.id != TetId),
-      {
-        ...tet,
-        start_at: convertLunarToSolarDate(start_at_2),
-        end_at: convertLunarToSolarDate(end_at_2),
-      },
-    ];
+  //   result = [
+  //     {
+  //       ...tet,
+  //       start_at: convertLunarToSolarDate(start_at_1),
+  //       end_at: convertLunarToSolarDate(end_at_1),
+  //     },
+  //     ...result.filter((item) => item.id != TetId),
+  //     {
+  //       ...tet,
+  //       start_at: convertLunarToSolarDate(start_at_2),
+  //       end_at: convertLunarToSolarDate(end_at_2),
+  //     },
+  //   ];
 
-    return result;
-  }
+  //   return result;
+  // }
 
-  public static async GetCurrentOccassions(): Promise<OccasionEntity> {
-    let occasions = await this.getCircleOccasion();
-    console.log(occasions);
+  // public static async GetCurrentOccassions(): Promise<OccasionEntity> {
+  //   let occasions = await this.getCircleOccasion();
+  //   console.log(occasions);
 
-    let index: number = 0;
-    const getTime = new Date().getTime();
-    for (let i = 0; i < occasions.length; i++) {
-      const d = occasions[i];
-      if (getTime >= d.start_at.getTime()) {
-        index = i;
-      } else {
-        if (i - 1 >= 0 && getTime > occasions[i - 1].end_at.getTime()) {
-          index = i;
-        }
-        break;
-      }
-    }
-    console.log(index);
+  //   let index: number = 0;
+  //   const getTime = new Date().getTime();
+  //   for (let i = 0; i < occasions.length; i++) {
+  //     const d = occasions[i];
+  //     if (getTime >= d.start_at.getTime()) {
+  //       index = i;
+  //     } else {
+  //       if (i - 1 >= 0 && getTime > occasions[i - 1].end_at.getTime()) {
+  //         index = i;
+  //       }
+  //       break;
+  //     }
+  //   }
+  //   console.log(index);
 
-    return occasions[index];
-  }
+  //   return occasions[index];
+  // }
 }

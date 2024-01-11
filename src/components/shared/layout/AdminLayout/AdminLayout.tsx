@@ -1,25 +1,30 @@
-import { auth_auth } from '@/auth_firebase.config';
-import { PageRoute } from '@/lib/constants/common';
-import { CalendarMonth, Category, Flatware, Home } from '@mui/icons-material';
+import { auth_auth } from "@/auth_firebase.config";
+import { PageRoute } from "@/lib/constants/common";
+import {
+  CalendarMonth,
+  Category,
+  Flatware,
+  Home,
+  InsertCommentRounded,
+  PeopleAltRounded,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
   Card,
-  CardContent,
   Grid,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Paper,
   SxProps,
-} from '@mui/material';
-import { signOut } from 'firebase/auth';
-import { FC, PropsWithChildren } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { AdminListButton } from './components';
+} from "@mui/material";
+import { signOut } from "firebase/auth";
+import { FC, PropsWithChildren } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { AdminListButton } from "./components";
 
 const commonStyle: SxProps = {
-  height: '100vh',
+  height: "100vh",
 };
 
 const AdminLayout: FC<PropsWithChildren> = ({ children }) => {
@@ -35,56 +40,59 @@ const AdminLayout: FC<PropsWithChildren> = ({ children }) => {
   };
 
   return (
-    <Grid container spacing={2} sx={{ p: 4 }}>
+    <Grid container spacing={3} sx={{ p: 4 }}>
       <Grid item xs={12}>
-        <Card>
-          <CardContent>
-            <Button variant="contained" onClick={handleLogout}>
-              Đăng xuất
-            </Button>
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={2.5} sx={[commonStyle]}>
-        <Paper
-          elevation={4}
+        <Card
           sx={{
             borderRadius: 4,
-            overflow: 'hidden',
+            p: 3,
+            textAlign: "right",
+          }}
+        >
+          <Button variant="contained" onClick={handleLogout}>
+            Đăng xuất
+          </Button>
+        </Card>
+      </Grid>
+
+      <Grid item xs={2.5} sx={[commonStyle]}>
+        <Card
+          sx={{
+            borderRadius: 4,
           }}
         >
           <Box component="nav">
-            <ListItemButton onClick={() => navigate('/')}>
+            <ListItemButton onClick={() => navigate("/")}>
               <ListItemIcon>
                 <Home color="primary" />
               </ListItemIcon>
               <ListItemText
-                sx={{ my: 0 }}
                 primaryTypographyProps={{
-                  fontFamily: 'Dancing Script',
-                  fontSize: 32,
+                  variant: "h6",
                 }}
                 primary="Tasteal"
               />
             </ListItemButton>
           </Box>
-        </Paper>
-        <Paper
-          elevation={4}
-          sx={{ mt: 1, borderRadius: 4, overflow: 'hidden' }}
-        >
-          <Box>
+        </Card>
+
+        <Card sx={{ mt: 2, borderRadius: 4 }}>
+          <Box
+            sx={{
+              py: 2,
+            }}
+          >
             <AdminListButton
               Icon={Flatware}
               label="Nguyên liệu"
               path={PageRoute.Ingredients.Index}
-              selected={checkSelected('ingredients')}
+              selected={checkSelected("ingredients")}
             />
             <AdminListButton
               Icon={Category}
               label="Loại nguyên liệu"
               path={PageRoute.IngredientTypes.Index}
-              selected={checkSelected('ingredientTypes')}
+              selected={checkSelected("ingredientTypes")}
             />
             <AdminListButton
               Icon={CalendarMonth}
@@ -93,23 +101,30 @@ const AdminLayout: FC<PropsWithChildren> = ({ children }) => {
               selected={checkSelected(`occasions`)}
             />
             <AdminListButton
-              Icon={CalendarMonth}
+              Icon={PeopleAltRounded}
               label="Người dùng"
               path={PageRoute.Users.Index}
               selected={checkSelected(`users`)}
             />
+
+            <AdminListButton
+              Icon={InsertCommentRounded}
+              label="Bình luận"
+              path={PageRoute.Comments.Index}
+              selected={checkSelected(`comments`)}
+            />
           </Box>
-        </Paper>
+        </Card>
       </Grid>
-      <Grid item xs={9.5} sx={[commonStyle]}>
-        <Paper
-          elevation={4}
+
+      <Grid item xs={true} sx={[commonStyle]}>
+        <Card
           sx={{
             borderRadius: 4,
           }}
         >
           {children}
-        </Paper>
+        </Card>
       </Grid>
     </Grid>
   );
