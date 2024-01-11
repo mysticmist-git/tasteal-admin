@@ -363,7 +363,7 @@ const AdminIngredientTypesCreate: FC = () => {
           }}
         />
         <DialogContent>
-          <DialogContentText>{`Dịp lễ "${
+          <DialogContentText>{`Loại nguyên liệu "${
             form?.id || 'loading'
           } - ${form?.name}" sẽ bị xóa!`}</DialogContentText>
         </DialogContent>

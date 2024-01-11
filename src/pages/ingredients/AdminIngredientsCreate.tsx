@@ -1,23 +1,18 @@
-import {
-  CreateIngredientReq,
-  UpdateIngredientReq,
-} from '@/api/models/dtos/Request/IngredientReq/IngredientReq';
 import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
-import { Ingredient_TypeEntity } from '@/api/models/entities/Ingredient_TypeEntity/Ingredient_TypeEntity';
 import { IngredientService } from '@/api/services/ingredientService';
-import { IngredientTypeService } from '@/api/services/ingredientTypeService';
-import { AdminLayout } from '@/components/shared/layout';
+import {
+  AdminIngredientForm,
+  IngredientForm,
+} from '@/components/features/admin';
 import { ImagePicker } from '@/components/shared/ui/files/ImagePicker';
 import { FormLabel, FormTitle } from '@/components/shared/ui/labels';
-import { TastealTextField } from '@/components/shared/ui/textfields/TastealTextField';
 import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
-import AdminIngredientHelper from '@/lib/types/admin/ingredients/AdminIngredientHelper';
-import { DEFAULT_INGREDIENT_REQ } from '@/lib/types/admin/ingredients/constants';
+import { deleteImage } from '@/lib/firebase';
+import { AdminIngredientHelper } from '@/lib/types/admin/ingredients/AdminIngredientHelper';
 import { FormMode } from '@/lib/types/admin/shared';
 import { ArrowBack, Close } from '@mui/icons-material';
 import {
-  Autocomplete,
   Button,
   CircularProgress,
   Dialog,
@@ -28,22 +23,36 @@ import {
   Divider,
   Grid,
   IconButton,
-  InputAdornment,
   Slide,
-  Switch,
-  TextFieldProps,
   Typography,
 } from '@mui/material';
 import { Stack } from '@mui/system';
-import {
-  Dispatch,
-  FC,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+
+const DEFAULT_FORM: IngredientForm = {
+  name: '',
+  image: '',
+  isLiquid: false,
+  ratio: 0,
+  type_id: 0,
+  nutrition_info: {
+    calories: 0,
+    fat: 0,
+    saturated_fat: 0,
+    trans_fat: 0,
+    cholesterol: 0,
+    carbohydrates: 0,
+    fiber: 0,
+    sugars: 0,
+    protein: 0,
+    sodium: 0,
+    vitaminD: 0,
+    calcium: 0,
+    iron: 0,
+    potassium: 0,
+  },
+};
 
 const AdminIngredientCreate: FC = () => {
   //#region Hooks
@@ -59,16 +68,17 @@ const AdminIngredientCreate: FC = () => {
     if (!form || !('id' in form)) return;
 
     setMode('edit');
-    let path: string = PageRoute.Admin.Ingredients.Edit;
+    setOldForm(form);
+    let path: string = PageRoute.Occasions.Edit(Number(id));
     path = path.replace(':id', form?.id?.toString() || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
-  const switchModeToView = (id?: number) => {
+  const switchModeToView = (id?: string) => {
     if (!id) return;
 
     setMode('view');
-    let path: string = PageRoute.Admin.Ingredients.View;
-    path = path.replace(':id', id.toString() || '');
+    let path: string = PageRoute.Occasions.View(Number(id));
+    path = path.replace(':id', id || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
 
@@ -78,23 +88,27 @@ const AdminIngredientCreate: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const handleNavigateBack = () => {
-    navigate(PageRoute.Admin.Ingredients.Index);
+    navigate(PageRoute.Ingredients.Index);
   };
 
   //#endregion
   //#region Form
 
-  const [createForm, setCreateForm] = useState<CreateIngredientReq>(
-    DEFAULT_INGREDIENT_REQ
-  );
-  const [updateForm, setUpdateForm] = useState<UpdateIngredientReq>();
-  const [viewForm, setViewForm] = useState<IngredientEntity>();
+  const [form, setForm] = useState<IngredientForm>(DEFAULT_FORM);
+
+  const [old, setOld] = useState<IngredientEntity>();
+  const [oldForm, setOldForm] = useState<IngredientForm>();
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setMode('create');
+      form !== DEFAULT_FORM && setForm(DEFAULT_FORM);
+      return;
+    }
 
     let active = true;
 
+    setLoading(true);
     (async () => {
       if (location.pathname.includes('edit')) {
         setMode('edit');
@@ -102,37 +116,33 @@ const AdminIngredientCreate: FC = () => {
         setMode('view');
       }
       try {
-        const row = await IngredientService.GetById(parseInt(id));
+        console.log('run');
+        const occasion = await IngredientService.GetById(parseInt(id));
+        console.log(occasion);
         if (!active) return;
-        setViewForm(row);
-        setUpdateForm(IngredientReqPutCreator.fromEntity(row));
+
+        setForm(AdminIngredientHelper.CreateFormObject(occasion));
+        setOld(occasion);
       } catch {
-        setViewForm(undefined);
-        setUpdateForm(undefined);
+        setForm(DEFAULT_FORM);
+      } finally {
+        setLoading(false);
       }
     })();
 
     return () => {
       active = false;
     };
-  }, [id, location.pathname]);
-
-  const [imageFile, setImageFile] = useState<File | null>(null);
-
-  const imageFileChange = (file: File) => {
-    setImageFile(file);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const validate = () => {
     if (!form.name) {
       snackbarAlert('Vui lòng nhập tên nguyên liệu!', 'warning');
       return false;
     }
-    if (
-      (form instanceof IngredientReqCreator ||
-        form instanceof IngredientReqPutCreator) &&
-      !form.ingredient_type.id
-    ) {
+
+    if ((mode === 'create' || mode === 'edit') && !form.type_id) {
       snackbarAlert('Vui lòng chọn loại nguyên liệu!', 'warning');
       return false;
     }
@@ -142,70 +152,81 @@ const AdminIngredientCreate: FC = () => {
   const handleCreateSubmit = async () => {
     if (!validate()) return;
 
-    if (!imageFile) {
-      snackbarAlert('Vui không tải ảnh nguyên liệu!', 'warning');
+    if (!form.image) {
+      snackbarAlert('Vui lòng tải ảnh nguyên liệu!', 'warning');
       return;
     }
 
-    setLoading(true);
-
+    setDisabled(true);
+    setProcessing(true);
+    let createdId = '';
     try {
-      // TODO
-      const reqBody = AdminIngredientHelper.CreatePostReqBody(
-        createForm,
-        imageFile
-      );
-      return;
-      const createdRow = await IngredientService.Add(reqBody);
-      switchModeToView(createdRow.id);
-      snackbarAlert('Nguyên liệu mới đã thêm thành công!', 'success');
+      const reqBody = await AdminIngredientHelper.CreatePostReq(form);
+
+      const created = await IngredientService.Add(reqBody);
+      createdId = created.id.toString();
+      snackbarAlert('Nguyên liệu thêm thành công!', 'success');
     } catch (err) {
       snackbarAlert('Nguyên liệu mới đã không được thêm!', 'warning');
       return;
     } finally {
-      setLoading(false);
+      setDisabled(false);
+      setProcessing(false);
+      if (!createdId) {
+        snackbarAlert('Nguyên liệu đã thêm nhưng id rỗng!');
+      }
+      switchModeToView(createdId);
     }
   };
 
   const handleUpdateSubmit = async () => {
+    if (!old) return;
     if (!validate()) return;
-
-    if (!form.image && !imageFile) {
-      snackbarAlert('Vui lòng tải ảnh nguyên này!', 'warning');
+    if (!form.image) {
+      snackbarAlert('Vui loại tải ảnh nguyên liệu!', 'warning');
       return;
     }
 
-    setLoading(true);
-
+    setDisabled(true);
+    setProcessing(true);
     try {
-      const reqBody = await AdminIngredientHelper.CreatePutReqBody(imageFile);
-      console.log(reqBody);
-      const updatedRow = await IngredientService.Update(reqBody);
-      console.log(updatedRow);
+      const reqBody = await AdminIngredientHelper.CreatePutReq(form, old);
+      await IngredientService.Update(reqBody);
 
-      switchModeToView(parseInt(id));
+      switchModeToView(id);
       snackbarAlert('Nguyên liệu cập nhật thành công!', 'success');
     } catch (err) {
       console.log(err);
       snackbarAlert('Nguyên liệu đã không được cập nhật', 'warning');
     } finally {
-      setLoading(false);
+      setDisabled(false);
+      setProcessing(false);
     }
   };
 
-  const [form, setForm] = useMemo(() => {
-    return mode === 'create'
-      ? [createForm, setCreateForm]
-      : mode === 'view'
-        ? [viewForm, setViewForm]
-        : [updateForm, setUpdateForm];
-  }, [createForm, mode, updateForm, viewForm]);
+  const handleCancelUpdate = () => {
+    if (!oldForm) return;
+
+    setForm(oldForm);
+    switchModeToView(id);
+  };
 
   //#endregion
   //#region State
 
-  const disabled = mode === 'view';
+  const [disabled, setDisabled] = useState(false);
+  useEffect(() => {
+    if (mode === 'view') {
+      setDisabled(true);
+    } else {
+      setDisabled(false);
+    }
+  }, [mode]);
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const allDisabled = useMemo(() => {
+    return disabled || processing || loading;
+  }, [disabled, loading, processing]);
 
   //#endregion
   //#region Deletion
@@ -223,17 +244,19 @@ const AdminIngredientCreate: FC = () => {
       return;
     }
 
-    setLoading(true);
-
+    setDisabled(true);
+    setProcessing(true);
     try {
-      await IngredientService.DeleteIngredient(Number(id));
+      const deleted = await IngredientService.DeleteIngredient(Number(id));
+      deleted.image && deleteImage(deleted.image);
       snackbarAlert('Nguyên liệu đã được xóa thành công', 'success');
-      navigate(PageRoute.Admin.Ingredients.Index);
+      navigate(PageRoute.Occasions.Index);
     } catch (err) {
       console.log(err);
       snackbarAlert('Nguyên liệu đã không được xóa', 'warning');
     } finally {
-      setLoading(false);
+      setDisabled(false);
+      setProcessing(false);
     }
   };
 
@@ -267,14 +290,21 @@ const AdminIngredientCreate: FC = () => {
             <Stack>
               <FormLabel>Hình ảnh</FormLabel>
               <ImagePicker
-                file={imageFile}
-                imagePath={form?.image || ''}
-                onChange={imageFileChange}
+                file={form.image instanceof File ? form.image : null}
+                imagePath={typeof form.image === 'string' ? form.image : ''}
+                onChange={(file) => {
+                  setForm((prev) => ({ ...prev, image: file || '' }));
+                }}
+                disabled={disabled}
               />
             </Stack>
           </Grid>
           <Grid item xs={9}>
-            <Form value={form} setValue={setForm} disabled={disabled} />
+            <AdminIngredientForm
+              value={form}
+              setValue={setForm}
+              disabled={disabled}
+            />
           </Grid>
         </Grid>
         <Divider flexItem sx={{ opacity: 0.5 }} />
@@ -290,9 +320,9 @@ const AdminIngredientCreate: FC = () => {
               variant="contained"
               onClick={handleCreateSubmit}
               sx={{ width: 240 }}
-              disabled={loading}
+              disabled={allDisabled}
             >
-              {loading ? (
+              {processing ? (
                 <CircularProgress size={24} sx={{ color: 'white' }} />
               ) : (
                 'Thêm'
@@ -305,7 +335,7 @@ const AdminIngredientCreate: FC = () => {
               color="error"
               onClick={handleDeleteDialogOpen}
               sx={{ width: 240 }}
-              disabled={loading}
+              disabled={processing || loading}
             >
               Xóa
             </Button>
@@ -315,7 +345,7 @@ const AdminIngredientCreate: FC = () => {
               variant="contained"
               onClick={() => switchModeToEdit()}
               sx={{ width: 240 }}
-              disabled={loading}
+              disabled={processing || loading}
             >
               Cập nhật
             </Button>
@@ -325,9 +355,9 @@ const AdminIngredientCreate: FC = () => {
               variant="contained"
               onClick={() => handleUpdateSubmit()}
               sx={{ width: 240 }}
-              disabled={loading}
+              disabled={allDisabled}
             >
-              {loading ? (
+              {processing ? (
                 <CircularProgress size={24} sx={{ color: 'white' }} />
               ) : (
                 'Cập nhật'
@@ -340,15 +370,14 @@ const AdminIngredientCreate: FC = () => {
               sx={{
                 width: 240,
               }}
-              onClick={() => switchModeToView(parseInt(id))}
-              disabled={loading}
+              onClick={() => handleCancelUpdate()}
+              disabled={loading || disabled}
             >
-              Hủy
+              Stack
             </Button>
           )}
         </Stack>
       </Stack>
-
       <Dialog
         open={deleteDialogOpen}
         onClose={handleDeleteDialogClose}
@@ -366,7 +395,7 @@ const AdminIngredientCreate: FC = () => {
             justifyContent={'space-between'}
             alignItems={'center'}
           >
-            <Typography typography={'h6'}>Xóa dịp lễ</Typography>
+            <Typography typography={'h6'}>Xóa nguyên liệu</Typography>
             <IconButton onClick={handleDeleteDialogClose} disabled={loading}>
               <Close />
             </IconButton>
@@ -378,9 +407,9 @@ const AdminIngredientCreate: FC = () => {
           }}
         />
         <DialogContent>
-          <DialogContentText>{`Dịp lễ "${
-            viewForm?.id || 'loading'
-          } - ${createForm?.name}" sẽ bị xóa!`}</DialogContentText>
+          <DialogContentText>{`Nguyên liệu "${
+            form?.id || 'loading'
+          } - ${form?.name}" sẽ bị xóa!`}</DialogContentText>
         </DialogContent>
         <Divider
           sx={{
@@ -392,9 +421,9 @@ const AdminIngredientCreate: FC = () => {
             variant="contained"
             color="error"
             onClick={handleDelete}
-            disabled={loading}
+            disabled={processing}
           >
-            {loading ? (
+            {processing ? (
               <CircularProgress size={24} sx={{ color: 'white' }} />
             ) : (
               'Xóa'
@@ -403,551 +432,13 @@ const AdminIngredientCreate: FC = () => {
           <Button
             variant="contained"
             onClick={handleDeleteDialogClose}
-            disabled={loading}
+            disabled={processing}
           >
             Hủy
           </Button>
         </DialogActions>
       </Dialog>
     </>
-  );
-};
-
-function NutritionInfoTextField(props: TextFieldProps & { unit?: string }) {
-  return (
-    <TastealTextField
-      {...props}
-      InputProps={{
-        ...props.InputProps,
-        endAdornment: props.unit ? (
-          <InputAdornment position="end">{props.unit}</InputAdornment>
-        ) : undefined,
-      }}
-      size="small"
-      type="number"
-    />
-  );
-}
-
-type FormProps = {
-  value: IngredientReqCreator | IngredientReqPutCreator | IngredientEntity;
-  setValue:
-    | Dispatch<SetStateAction<IngredientReqCreator>>
-    | Dispatch<SetStateAction<IngredientReqPutCreator>>
-    | Dispatch<SetStateAction<IngredientEntity>>;
-  disabled?: boolean;
-};
-
-const Form: FC<FormProps> = ({ value, setValue, disabled = false }) => {
-  const [types, setTypes] = useState<Ingredient_TypeEntity[]>([]);
-  useEffect(() => {
-    let active = true;
-
-    (async () => {
-      try {
-        const types = await IngredientTypeService.GetAllIngredientTypes();
-
-        if (!active) return;
-
-        setTypes(types);
-      } catch (err) {
-        console.log(err);
-        setTypes([]);
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const selectedType: Ingredient_TypeEntity | undefined = useMemo(() => {
-    if (
-      value instanceof IngredientReqCreator ||
-      value instanceof IngredientReqPutCreator
-    ) {
-      return (
-        types.find((type) => type.id === value?.ingredient_type.id) || null
-      );
-    } else {
-      return types.find((type) => type.id === value?.type_id) || null;
-    }
-  }, [types, value]);
-
-  return (
-    <Stack gap={2}>
-      <Stack>
-        <FormLabel>Tên nguyên liệu</FormLabel>
-        <TastealTextField
-          placeholder="Táo đen"
-          value={value?.name || ''}
-          onChange={(e) =>
-            setValue((prev) => {
-              if (
-                prev instanceof IngredientReqCreator ||
-                prev instanceof IngredientReqPutCreator
-              ) {
-                console.log('run');
-                const clone = prev.clone();
-                clone.name = e.target.value;
-                return clone;
-              }
-              console.log('run');
-              return { ...prev, name: e.target.value };
-            })
-          }
-          disabled={disabled}
-        />
-      </Stack>
-      <Stack>
-        <FormLabel>Loại nguyên liệu</FormLabel>
-        <Autocomplete
-          options={types}
-          getOptionLabel={(o) => o.name}
-          title="Chọn loại nguyên liệu"
-          placeholder="Chọn loại cho nguyên liệu"
-          noOptionsText="Không tìm thấy loại nguyên liệu nào"
-          renderInput={(params) => (
-            <TastealTextField {...params} label="Chọn loại" />
-          )}
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          value={selectedType}
-          onChange={(_, value) =>
-            setValue((prev) => {
-              if (
-                prev instanceof IngredientReqCreator ||
-                prev instanceof IngredientReqPutCreator
-              ) {
-                const clone = prev.clone();
-                console.log(clone);
-                console.log(value);
-                clone.ingredient_type.id = value
-                  ? value.id
-                  : prev.ingredient_type.id;
-                return clone;
-              }
-              return {
-                ...prev,
-                type_id: value ? prev.type_id : value.id,
-              };
-            })
-          }
-          disabled={disabled}
-        />
-      </Stack>
-      <Divider flexItem sx={{ opacity: 0.5 }} />
-      <Stack>
-        <FormLabel>Thành phần dinh dưỡng</FormLabel>
-        <Stack gap={2}>
-          <NutritionInfoTextField
-            label="Calories"
-            value={value?.nutrition_info.calories || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.calories = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    calories: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Chất béo (Fat)"
-            unit="g"
-            value={value?.nutrition_info.fat || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.fat = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    fat: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Chất béo bão hóa (Saturated fat)"
-            unit="g"
-            value={value?.nutrition_info.saturated_fat || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.saturated_fat = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    saturated_fat: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Chất béo trans (Trans fat)"
-            unit="g"
-            value={value?.nutrition_info.trans_fat || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.trans_fat = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    trans_fat: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Cholesterol"
-            unit="mg"
-            value={value?.nutrition_info.cholesterol || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.cholesterol = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    cholesterol: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Carbohydrates"
-            unit="g"
-            value={value?.nutrition_info.carbohydrates || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.carbohydrates = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    carbohydrates: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Chất xơ (Fiber)"
-            unit="g"
-            value={value?.nutrition_info.fiber || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.fiber = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    fiber: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Đường (Sugars)"
-            unit="g"
-            value={value?.nutrition_info.sugars || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.sugars = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    sugars: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Chất đạm (Protein)"
-            unit="g"
-            value={value?.nutrition_info.protein || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.protein = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    protein: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Natri (Sodium)"
-            unit="mg"
-            value={value?.nutrition_info.sodium || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.sodium = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    sodium: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Vitamin D"
-            unit="mcg"
-            value={value?.nutrition_info.vitaminD || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.vitaminD = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    vitaminD: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Canxi (Calcium)"
-            unit="mcg"
-            value={value?.nutrition_info.calcium || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.calcium = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    calcium: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Sắt (Iron)"
-            unit="mg"
-            value={value?.nutrition_info.iron || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.iron = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    iron: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-          <NutritionInfoTextField
-            label="Kali (Potassium)"
-            unit="mg"
-            value={value?.nutrition_info.potassium || 0}
-            onChange={(e) =>
-              setValue((prev) => {
-                if (
-                  value instanceof IngredientReqCreator ||
-                  value instanceof IngredientReqPutCreator
-                ) {
-                  const clone = value.clone();
-                  clone.nutrition_info.potassium = Number(e.target.value);
-                  return clone;
-                }
-                return {
-                  ...prev,
-                  nutrition_info: {
-                    ...prev.nutrition_info,
-                    potassium: Number(e.target.value),
-                  },
-                };
-              })
-            }
-            disabled={disabled}
-          />
-        </Stack>
-      </Stack>
-      <Divider flexItem sx={{ opacity: 0.5 }} />
-      <Grid container columnSpacing={1}>
-        <Grid item xs={6}>
-          <Stack>
-            <FormLabel>Tỉ lệ quy đổi</FormLabel>
-            <TastealTextField
-              placeholder="0.5"
-              value={value?.ratio || 0}
-              onChange={(e) =>
-                setValue((prev) => {
-                  if (
-                    prev instanceof IngredientReqCreator ||
-                    prev instanceof IngredientReqPutCreator
-                  ) {
-                    const clone = prev.clone();
-                    clone.ratio = Number(e.target.value);
-                    return clone;
-                  }
-                  return {
-                    ...prev,
-                    ratio: Number(e.target.value),
-                  };
-                })
-              }
-              disabled={disabled}
-              InputProps={{
-                endAdornment: <InputAdornment position="end">%</InputAdornment>,
-              }}
-            />
-          </Stack>
-        </Grid>
-        <Grid item xs={6}>
-          <Stack>
-            <FormLabel>Là chất lỏng</FormLabel>
-            <Switch
-              value={value?.isLiquid || false}
-              onChange={(_, checked) =>
-                setValue((prev) => {
-                  if (
-                    prev instanceof IngredientReqCreator ||
-                    prev instanceof IngredientReqPutCreator
-                  ) {
-                    const clone = prev.clone();
-                    clone.isLiquid = checked;
-                    return clone;
-                  }
-                  return {
-                    ...prev,
-                    isLiquid: checked,
-                  };
-                })
-              }
-              disabled={disabled}
-            />
-          </Stack>
-        </Grid>
-      </Grid>
-    </Stack>
   );
 };
 
