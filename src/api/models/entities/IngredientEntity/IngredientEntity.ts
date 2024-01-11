@@ -1,5 +1,5 @@
-import { Ingredient_TypeEntity } from "../Ingredient_TypeEntity/Ingredient_TypeEntity";
-import { Nutrition_InfoEntity } from "../Nutrition_InfoEntity/Nutrition_InfoEntity";
+import { Ingredient_TypeEntity } from '@/api/models/entities/Ingredient_TypeEntity/Ingredient_TypeEntity';
+import { Nutrition_InfoEntity } from '@/api/models/entities/Nutrition_InfoEntity/Nutrition_InfoEntity';
 
 export type IngredientEntity = {
   id: number;

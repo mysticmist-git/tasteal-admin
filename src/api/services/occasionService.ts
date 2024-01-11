@@ -1,5 +1,6 @@
 import { ApiEndPoint } from '@/api/lib/url';
 import { occasions as occasionsSampleData } from '@/lib/constants/sampleData';
+import { deleteImage } from '@/lib/firebase';
 import { convertLunarToSolarDate } from '@/utils/string';
 import {
   OccasionReq,
@@ -69,19 +70,14 @@ export class OccasionService {
       },
     };
 
-    return await fetch(ApiEndPoint.GetOccasionById(id), requestOptions)
+    return fetch(ApiEndPoint.GetOccasionById(id), requestOptions)
       .then((response) => response.json())
       .then((data: OccasionEntity) => {
-        console.log(data);
         return {
           ...data,
           start_at: new Date(data.start_at),
           end_at: new Date(data.end_at),
         };
-      })
-      .catch((error) => {
-        console.error('Lỗi:', error);
-        throw error;
       });
   }
 
@@ -133,7 +129,6 @@ export class OccasionService {
         'Content-Type': 'application/json; charset=UTF-8',
       },
     };
-
     return await fetch(ApiEndPoint.DeleteOccasion(id), requestOptions)
       .then((response) => response.json())
       .then((data) => {

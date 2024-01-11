@@ -16,10 +16,10 @@ export const PageRoute = {
     Edit: (id: number) => `/ingredients/${id}/edit`,
   },
   IngredientTypes: {
-    Index: '/ingredientTypes',
-    Create: '/ingredientTypes/create',
-    View: (id: number) => `/ingredientTypes/${id}`,
-    Edit: (id: number) => `/ingredientTypes/${id}/edit`,
+    Create: '/ingredient-types/create',
+    Index: '/ingredient-types',
+    View: (id: number) => `/ingredient-types/${id}`,
+    Edit: (id: number) => `/ingredient-types/${id}/edit`,
   },
   Occasions: {
     Index: '/occasions',

@@ -1,5 +1,5 @@
-import { PlanEntity } from '../PlanEntity/PlanEntity';
-import { RecipeEntity } from '../RecipeEntity/RecipeEntity';
+import { PlanEntity } from '@/api/models/entities/PlanEntity/PlanEntity';
+import { RecipeEntity } from '@/api/models/entities/RecipeEntity/RecipeEntity';
 
 export type Plan_ItemEntity = {
   id: number | string;

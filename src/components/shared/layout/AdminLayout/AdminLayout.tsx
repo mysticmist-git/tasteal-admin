@@ -1,4 +1,4 @@
-import { auth } from '@/firebase.config';
+import { auth_auth } from '@/auth_firebase.config';
 import { PageRoute } from '@/lib/constants/common';
 import { CalendarMonth, Category, Flatware, Home } from '@mui/icons-material';
 import {
@@ -31,7 +31,7 @@ const AdminLayout: FC<PropsWithChildren> = ({ children }) => {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await signOut(auth_auth);
   };
 
   return (
@@ -96,7 +96,7 @@ const AdminLayout: FC<PropsWithChildren> = ({ children }) => {
               Icon={CalendarMonth}
               label="Người dùng"
               path={PageRoute.Users.Index}
-              selected={checkSelected(`occasions`)}
+              selected={checkSelected(`users`)}
             />
           </Box>
         </Paper>

@@ -12,7 +12,7 @@ import { FormLabel, FormTitle } from '@/components/shared/ui/labels';
 import { TastealTextField } from '@/components/shared/ui/textfields/TastealTextField';
 import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
-import AdminIngredientService from '@/lib/types/admin/ingredients/AdminIngredientService';
+import AdminIngredientHelper from '@/lib/types/admin/ingredients/AdminIngredientHelper';
 import { DEFAULT_INGREDIENT_REQ } from '@/lib/types/admin/ingredients/constants';
 import { FormMode } from '@/lib/types/admin/shared';
 import { ArrowBack, Close } from '@mui/icons-material';
@@ -151,7 +151,7 @@ const AdminIngredientCreate: FC = () => {
 
     try {
       // TODO
-      const reqBody = AdminIngredientService.CreatePostReqBody(
+      const reqBody = AdminIngredientHelper.CreatePostReqBody(
         createForm,
         imageFile
       );
@@ -178,7 +178,7 @@ const AdminIngredientCreate: FC = () => {
     setLoading(true);
 
     try {
-      const reqBody = await AdminIngredientService.CreatePutReqBody(imageFile);
+      const reqBody = await AdminIngredientHelper.CreatePutReqBody(imageFile);
       console.log(reqBody);
       const updatedRow = await IngredientService.Update(reqBody);
       console.log(updatedRow);

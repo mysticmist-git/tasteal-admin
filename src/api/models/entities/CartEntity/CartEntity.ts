@@ -1,5 +1,5 @@
-import { AccountEntity } from "../AccountEntity/AccountEntity";
-import { RecipeEntity } from "../RecipeEntity/RecipeEntity";
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
+import { RecipeEntity } from '@/api/models/entities/RecipeEntity/RecipeEntity';
 
 export type CartEntity = {
   id: number;

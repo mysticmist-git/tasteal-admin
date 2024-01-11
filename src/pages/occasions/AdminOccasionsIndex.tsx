@@ -1,7 +1,6 @@
 import { OccasionEntity } from '@/api/models/entities/OccasionEntity/OccasionEntity';
 import { OccasionService } from '@/api/services/occasionService';
 import { CommonIndexPage } from '@/components/features/admin';
-import { AdminLayout } from '@/components/shared/layout';
 import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
 import { GridColDef } from '@mui/x-data-grid';
@@ -99,23 +98,21 @@ export const AdminOccasionsIndex: FC = () => {
   };
 
   return (
-    <AdminLayout>
-      <CommonIndexPage
-        title={'Dịp lễ'}
-        rows={rows}
-        columns={occasionColumns}
-        loading={loading}
-        dialogProps={{
-          title: 'Xóa dịp lễ',
-          content: 'Bạn có chắc muốn xóa dịp lễ này?',
-        }}
-        paginationModel={paginationModel}
-        rowCount={rowCount}
-        onPaginationModelChange={setPaginationModel}
-        onCreateClick={handleCreateClick}
-        onViewClick={handleViewClick}
-        onDeleteClick={handleDeleteClick}
-      />
-    </AdminLayout>
+    <CommonIndexPage
+      title={'Dịp lễ'}
+      rows={rows}
+      columns={occasionColumns}
+      loading={loading}
+      dialogProps={{
+        title: 'Xóa dịp lễ',
+        content: 'Bạn có chắc muốn xóa dịp lễ này?',
+      }}
+      paginationModel={paginationModel}
+      rowCount={rowCount}
+      onPaginationModelChange={setPaginationModel}
+      onCreateClick={handleCreateClick}
+      onViewClick={handleViewClick}
+      onDeleteClick={handleDeleteClick}
+    />
   );
 };

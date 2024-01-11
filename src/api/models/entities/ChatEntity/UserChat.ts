@@ -1,10 +1,10 @@
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
 import {
   DocumentData,
   FirestoreDataConverter,
   QueryDocumentSnapshot,
   SnapshotOptions,
 } from 'firebase/firestore';
-import { AccountEntity } from '../AccountEntity/AccountEntity';
 
 type ChatWithType = {
   id: string;
