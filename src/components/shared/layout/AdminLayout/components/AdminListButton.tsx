@@ -1,7 +1,7 @@
-import { SvgIconComponent } from '@mui/icons-material';
-import { ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { FC, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { SvgIconComponent } from "@mui/icons-material";
+import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { FC, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 export type AdminListButtonProps = {
   Icon: SvgIconComponent;
@@ -31,28 +31,30 @@ const AdminListButton: FC<AdminListButtonProps> = ({
       sx={
         selected
           ? {
-              backgroundColor: 'primary.light',
-              ':hover': {
-                backgroundColor: 'primary.main',
+              backgroundColor: "primary.light",
+              ":hover": {
+                backgroundColor: "primary.main",
               },
-              ':focus': {
-                backgroundColor: 'primary.main',
+              ":focus": {
+                backgroundColor: "primary.main",
               },
             }
           : {
-              backgroundColor: 'primary.contrastText',
+              backgroundColor: "primary.contrastText",
             }
       }
     >
       <ListItemIcon>
         <Icon
-          sx={{ color: selected ? 'primary.contrastText' : 'primary.main' }}
+          fontSize="small"
+          sx={{ color: selected ? "primary.contrastText" : "primary.main" }}
         />
       </ListItemIcon>
       <ListItemText
         primary={label}
         primaryTypographyProps={{
-          color: selected ? 'primary.contrastText' : 'primary.main',
+          color: selected ? "primary.contrastText" : "primary.main",
+          variant: "body2",
         }}
       />
     </ListItemButton>
