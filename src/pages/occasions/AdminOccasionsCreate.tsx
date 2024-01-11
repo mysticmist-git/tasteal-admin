@@ -170,7 +170,7 @@ const AdminOccasionsCreate: FC = () => {
     if (!old) return;
     if (!validate()) return;
     if (!form.image) {
-      snackbarAlert('Vui loại tải ảnh dịp lễ!', 'warning');
+      snackbarAlert('Vui lòng tải ảnh dịp lễ!', 'warning');
       return;
     }
 

@@ -1,5 +1,4 @@
 import { RecipeRes } from '@/api/models/dtos/Response/RecipeRes/RecipeRes';
-import { IngredientService } from '@/api/services/ingredientService';
 import { RecipeService } from '@/api/services/recipeService';
 import { AdminRecipeForm, RecipeForm } from '@/components/features/admin';
 import { ImagePicker } from '@/components/shared/ui/files/ImagePicker';
@@ -40,7 +39,20 @@ const DEFAULT_FORM: RecipeForm = {
   author_note: '',
   is_private: true,
   author: '',
-};
+} as const;
+
+const LocalMessageConstant = {
+  Validation: {
+    InvalidData: 'Dữ liệu không hợp lệ!',
+    NameRequired: 'Tên không được để trống!!',
+    IntroductionRequired: 'Giới thiệu không được để trống!',
+    IngredientRequired: 'Vui lòng thêm nguyên liệu!',
+    DirectionRequired: 'Vui lòng thêm bước thực hiện!',
+    TotalTimeRequired: 'Tổng thời gian không được để trống!',
+    InvalidActiveTime: 'Thời gian thực phải nhỏ hơn tổng thời gian!',
+    ImageRequired: 'Vui lòng tải ảnh đại diện!',
+  } as const,
+} as const;
 
 const AdminRecipesCreate: FC = () => {
   //#region Hooks
@@ -57,7 +69,7 @@ const AdminRecipesCreate: FC = () => {
 
     setMode('edit');
     setOldForm(form);
-    let path: string = PageRoute.Ingredients.Edit(Number(id));
+    let path: string = PageRoute.Recipes.Edit(Number(id));
     path = path.replace(':id', form?.id?.toString() || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
@@ -65,7 +77,7 @@ const AdminRecipesCreate: FC = () => {
     if (!id) return;
 
     setMode('view');
-    let path: string = PageRoute.Ingredients.View(Number(id));
+    let path: string = PageRoute.Recipes.View(Number(id));
     path = path.replace(':id', id || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
@@ -76,7 +88,7 @@ const AdminRecipesCreate: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const handleNavigateBack = () => {
-    navigate(PageRoute.Ingredients.Index);
+    navigate(PageRoute.Recipes.Index);
   };
 
   //#endregion
@@ -106,6 +118,7 @@ const AdminRecipesCreate: FC = () => {
       try {
         const recipe = await RecipeService.GetById(parseInt(id));
         if (!active) return;
+        console.log(recipe);
 
         const gotForm = AdminRecipeHelper.CreateFormObject(recipe);
         setForm(gotForm);
@@ -123,50 +136,6 @@ const AdminRecipesCreate: FC = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
-
-  const validate = () => {
-    snackbarAlert(
-      '[DEBUG] This is prevent you from actually do anything',
-      'warning'
-    );
-    return false;
-  };
-
-  const handleUpdateSubmit = async () => {
-    if (!id) return;
-    if (!old) return;
-    if (!validate()) return;
-    if (!form.image) {
-      snackbarAlert('Vui loại tải ảnh Công thức!', 'warning');
-      return;
-    }
-
-    setDisabled(true);
-    setProcessing(true);
-    try {
-      const reqBody = await AdminRecipeHelper.CreatePutReq(form, old);
-      await RecipeService.Update(Number(id), reqBody);
-
-      switchModeToView(id);
-      snackbarAlert('Công thức cập nhật thành công!', 'success');
-    } catch (err) {
-      console.log(err);
-      snackbarAlert('Công thức đã không được cập nhật', 'warning');
-    } finally {
-      setDisabled(false);
-      setProcessing(false);
-    }
-  };
-
-  const handleCancelUpdate = () => {
-    console.log('run');
-    console.log(oldForm);
-    if (!oldForm) return;
-    console.log('run');
-
-    setForm(oldForm);
-    switchModeToView(id);
-  };
 
   //#endregion
   //#region State
@@ -204,10 +173,10 @@ const AdminRecipesCreate: FC = () => {
     setDisabled(true);
     setProcessing(true);
     try {
-      const deleted = await IngredientService.DeleteIngredient(Number(id));
+      const deleted = await RecipeService.Delete(Number(id));
       deleted.image && deleteImage(deleted.image);
       snackbarAlert('Công thức đã được xóa thành công', 'success');
-      navigate(PageRoute.Ingredients.Index);
+      navigate(PageRoute.Recipes.Index);
     } catch (err) {
       console.log(err);
       snackbarAlert('Công thức đã không được xóa', 'warning');
@@ -298,42 +267,6 @@ const AdminRecipesCreate: FC = () => {
               disabled={processing || loading}
             >
               Xóa
-            </Button>
-          )}
-          {mode === 'view' && (
-            <Button
-              variant="contained"
-              onClick={() => switchModeToEdit()}
-              sx={{ width: 240 }}
-              disabled={processing || loading}
-            >
-              Cập nhật
-            </Button>
-          )}
-          {mode === 'edit' && (
-            <Button
-              variant="contained"
-              onClick={() => handleUpdateSubmit()}
-              sx={{ width: 240 }}
-              disabled={allDisabled}
-            >
-              {processing ? (
-                <CircularProgress size={24} sx={{ color: 'white' }} />
-              ) : (
-                'Cập nhật'
-              )}
-            </Button>
-          )}
-          {mode === 'edit' && (
-            <Button
-              variant="outlined"
-              sx={{
-                width: 240,
-              }}
-              onClick={() => handleCancelUpdate()}
-              disabled={loading || disabled}
-            >
-              Hủy
             </Button>
           )}
         </Stack>

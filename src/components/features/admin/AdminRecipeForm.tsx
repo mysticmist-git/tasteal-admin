@@ -33,7 +33,7 @@ export type RecipeForm = {
     id: number;
     amount: number;
   }[];
-  directions: [];
+  directions: RecipeFormDirection[];
   occasions?: number[];
   author: string;
 };
@@ -86,11 +86,6 @@ export const AdminRecipeForm: FC<AdminRecipeFormProps> = ({
       .then((occasions) => setOccasions(occasions))
       .catch(() => setOccasions([]));
   }, []);
-
-  //#endregion
-  //#region Dialog
-
-  const [ingredientDialog, setIngredientDialog] = useState(false);
 
   //#endregion
 
@@ -152,9 +147,10 @@ export const AdminRecipeForm: FC<AdminRecipeFormProps> = ({
           disabled={disabled}
           servingSize={value.serving_size}
           sizes={ServingSizes}
-          onServingSizeChange={(size) => () =>
-            setValue((prev) => ({ ...prev, serving_size: size }))
-          }
+          onServingSizeChange={(size) => {
+            console.log(size);
+            setValue((prev) => ({ ...prev, serving_size: size }));
+          }}
         />
       </Stack>
       <Stack>
@@ -165,7 +161,7 @@ export const AdminRecipeForm: FC<AdminRecipeFormProps> = ({
           onChange={(ingredients) =>
             setValue((prev) => ({ ...prev, ingredients: ingredients }))
           }
-          onOpen={() => setIngredientDialog(true)}
+          onOpen={() => {}}
         />
       </Stack>
       <Stack>

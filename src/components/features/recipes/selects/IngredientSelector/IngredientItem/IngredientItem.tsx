@@ -12,7 +12,6 @@ export const IngredientItem: React.FunctionComponent<IngredientItemProps> = ({
 }) => {
   const ingredient =
     ingredients.find((ingredient) => ingredient.id === Number(item.id)) || null;
-
   const [isHovering, setIsHovering] = useState(false);
 
   //#region Handlers

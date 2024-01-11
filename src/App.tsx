@@ -56,16 +56,6 @@ const App = () => {
                         </ProtectedRoute>
                       }
                     />
-                    <Route
-                      path=":id/edit"
-                      element={
-                        <ProtectedRoute>
-                          <AdminLayout>
-                            <AdminIngredientCreate />
-                          </AdminLayout>
-                        </ProtectedRoute>
-                      }
-                    />
                   </Route>
 
                   <Route path={'/ingredients'}>

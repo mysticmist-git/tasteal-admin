@@ -184,7 +184,7 @@ const AdminIngredientCreate: FC = () => {
     if (!old) return;
     if (!validate()) return;
     if (!form.image) {
-      snackbarAlert('Vui loại tải ảnh nguyên liệu!', 'warning');
+      snackbarAlert('Vui lòng tải ảnh nguyên liệu!', 'warning');
       return;
     }
 

@@ -1,10 +1,9 @@
-import { RecipeDirectionReq } from '@/api/models/dtos/Request/RecipeDirectionReq/RecipeDirectionReq';
 import { RecipeReq } from '@/api/models/dtos/Request/RecipeReq/RecipeReq';
 import { RecipeRes } from '@/api/models/dtos/Response/RecipeRes/RecipeRes';
 import { RecipeForm } from '@/components/features/admin';
 import { DirectionEditorItemValue } from '@/components/features/recipes/selects/others/DirectionEditor/DirectionEditorItem/DirectionEditorItem';
 import { StoragePath } from '@/lib/constants/storage';
-import { deleteImage, uploadImage } from '@/lib/firebase';
+import { uploadImage } from '@/lib/firebase';
 import { tasteal_storage } from '@/tasteal_firebase.config';
 import { getFileExtension } from '@/utils/file';
 import { convertToSnakeCase } from '@/utils/string';
@@ -89,8 +88,8 @@ export class AdminRecipeHelper {
         amount: ingredient.amount || 0,
       })),
       directions: entity.directions.map((direction) => ({
-        direction: direction.direction,
-        step: direction.step,
+        step: direction.step || 0,
+        direction: direction.direction || '',
         image: direction.image,
       })),
       occasions: entity.occasions?.map((occasion) => occasion.id) || [],
@@ -160,108 +159,6 @@ export class AdminRecipeHelper {
       directions: directionsWithImage,
       author_note: clonedForm.author_note,
       author: uid,
-      is_private: clonedForm.is_private,
-      rating: 0,
-    };
-    return req;
-  }
-
-  static async CreatePutReq(
-    form: RecipeForm,
-    old: RecipeRes
-  ): Promise<RecipeReq> {
-    const clonedForm = { ...form };
-
-    if (!clonedForm.id) {
-      throw new Error('invalid id');
-    }
-
-    if (clonedForm.image instanceof File) {
-      let imagePath = old.image;
-      if (imagePath) {
-        clonedForm.image = await uploadImage(clonedForm.image, imagePath);
-      } else {
-        imagePath = `${StoragePath.OCCASION}/${convertToSnakeCase(
-          clonedForm.name
-        )}.${getFileExtension(clonedForm.image.name)}`;
-        // check if image existed
-        let existed = false;
-        try {
-          const imageRef = ref(tasteal_storage, imagePath);
-          const path = await getDownloadURL(imageRef);
-          if (path) existed = true;
-        } catch {
-          /* empty */
-        }
-        if (existed) {
-          imagePath = `${imagePath}-${nanoid()}`;
-        }
-
-        // upload image
-        clonedForm.image = await uploadImage(clonedForm.image, imagePath);
-      }
-    }
-
-    // Directions-related logic
-    let directionsChange = false;
-
-    // Check for changes in directions
-    if (clonedForm.directions.length !== old.directions.length) {
-      directionsChange = true;
-      console.log('Directions lengths differ, triggering change');
-    } else {
-      for (let i = 0; i < old.directions.length; i++) {
-        if (
-          (clonedForm.directions[i].image &&
-            clonedForm.directions[i].image instanceof File) ||
-          clonedForm.directions[i].direction !== old.directions[i].direction
-        ) {
-          directionsChange = true;
-          console.log('Direction change detected at index', i);
-          break;
-        }
-      }
-    }
-
-    if (directionsChange) {
-      console.log('Updating directions...');
-      // Delete old images
-      for (const direction of old.directions) {
-        if (direction.image) {
-          console.log('Deleting image:', direction.image);
-          try {
-            await deleteImage(direction.image);
-          } catch (err) {
-            console.log(err);
-          }
-        }
-      }
-
-      const imageId =
-        old.image?.split('/')[1].split('.')[0] ||
-        `${clonedForm.name}-${nanoid()}`;
-      clonedForm.directions = await resolveDirectionsImage(
-        clonedForm.directions,
-        imageId
-      );
-      console.log('Directions updated:', clonedForm.directions);
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const req: RecipeReq = {
-      name: clonedForm.name,
-      introduction: clonedForm.introduction,
-      image: clonedForm.image || undefined,
-      totalTime: clonedForm.totalTime,
-      serving_size: clonedForm.serving_size,
-      occasions: clonedForm.occasions,
-      ingredients: clonedForm.ingredients.map((ingredient) => ({
-        id: ingredient.id,
-        amount: ingredient.amount,
-      })),
-      directions: clonedForm.directions as RecipeDirectionReq[],
-      author_note: clonedForm.author_note,
-      author: old.author.uid,
       is_private: clonedForm.is_private,
       rating: 0,
     };
