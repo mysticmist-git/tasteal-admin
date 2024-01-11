@@ -32,10 +32,6 @@ export const AdminIngredientTypesIndex: FC = () => {
 
   const [rows, setRows] = useState<Ingredient_TypeEntity[]>([]);
   const [rowCount, setRowCount] = useState(0);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 10,
-  });
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     let active = true;
@@ -62,7 +58,7 @@ export const AdminIngredientTypesIndex: FC = () => {
     return () => {
       active = false;
     };
-  }, [paginationModel, paginationModel.page, paginationModel.pageSize]);
+  }, []);
 
   //#endregion
   //#region Navigation
@@ -106,9 +102,7 @@ export const AdminIngredientTypesIndex: FC = () => {
         title: 'Xóa loại nguyên liệu',
         content: 'Bạn có chắc muốn xóa loại nguyên liệu này?',
       }}
-      paginationModel={paginationModel}
       rowCount={rowCount}
-      onPaginationModelChange={setPaginationModel}
       onCreateClick={handleCreateClick}
       onViewClick={handleViewClick}
       onDeleteClick={handleDeleteClick}

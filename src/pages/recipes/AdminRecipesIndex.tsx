@@ -1,15 +1,17 @@
-import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
-import { Ingredient_TypeEntity } from '@/api/models/entities/Ingredient_TypeEntity/Ingredient_TypeEntity';
-import { IngredientService } from '@/api/services/ingredientService';
-import { IngredientTypeService } from '@/api/services/ingredientTypeService';
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
+import { RecipeEntity } from '@/api/models/entities/RecipeEntity/RecipeEntity';
+import { AccountService } from '@/api/services/accountService';
+import { RecipeService } from '@/api/services/recipeService';
 import { CommonIndexPage } from '@/components/features/admin';
 import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
+import { StarRounded } from '@mui/icons-material';
+import { Rating, Stack } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export const AdminIngredientsIndex: FC = () => {
+export const AdminRecipesIndex: FC = () => {
   //#region Hooks
 
   const navigate = useNavigate();
@@ -19,11 +21,11 @@ export const AdminIngredientsIndex: FC = () => {
   //#region Navigation
 
   const handleCreateRow = useCallback(() => {
-    navigate(PageRoute.Ingredients.Create);
+    navigate(PageRoute.Recipes.Create);
   }, [navigate]);
   const handleViewRow = useCallback(
     (id: number) => {
-      navigate(PageRoute.Ingredients.View(id));
+      navigate(PageRoute.Recipes.View(id));
     },
     [navigate]
   );
@@ -33,19 +35,19 @@ export const AdminIngredientsIndex: FC = () => {
 
   const handleDeleteRow = async (id: number) => {
     if (!id) {
-      snackbarAlert('Nguyên liệu đã không bị xóa!', 'warning');
+      snackbarAlert('công thức đã không bị xóa!', 'warning');
       return;
     }
 
     setLoading(true);
 
     try {
-      await IngredientService.DeleteIngredient(id);
-      snackbarAlert(`Nguyên này đã bị xóa thành công!`, 'success');
+      await RecipeService.Delete(id);
+      snackbarAlert(`Công thức này đã bị xóa thành công!`, 'success');
       setRows(rows.filter((row) => row.id !== id));
     } catch (err) {
       console.log(err);
-      snackbarAlert('Nguyên liệu đã không bị xóa!', 'warning');
+      snackbarAlert('Công thức đã không bị xóa!', 'warning');
     } finally {
       setLoading(false);
     }
@@ -65,22 +67,39 @@ export const AdminIngredientsIndex: FC = () => {
       flex: 1,
     },
     {
-      field: 'type_id',
-      headerName: 'Loại',
-      valueFormatter: function (params) {
-        return (
-          ingredientTypes.find((type) => type.id === params.value)?.name ||
-          'Không tìm thấy'
-        );
-      },
+      field: 'introduction',
+      headerName: 'Giới thiệu',
       flex: 1,
+    },
+    {
+      field: 'rating',
+      headerName: 'Đánh giá',
+      renderCell: (params) => (
+        <Stack direction="row">
+          <Rating
+            value={params.row.rating}
+            precision={0.5}
+            readOnly
+            icon={<StarRounded fontSize="inherit" />}
+            emptyIcon={<StarRounded fontSize="inherit" />}
+            size="small"
+          />
+        </Stack>
+      ),
+    },
+    {
+      field: 'author',
+      headerName: 'Tác giả',
+      valueFormatter: (params) =>
+        authors.find((author) => author.uid === params.value)?.name ||
+        'Mặc định',
     },
   ];
 
   //#endregion
-  //#region Pagination
+  //#region Data
 
-  const [rows, setRows] = useState<IngredientEntity[]>([]);
+  const [rows, setRows] = useState<RecipeEntity[]>([]);
   const [rowCount, setRowCount] = useState(0);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
@@ -90,7 +109,7 @@ export const AdminIngredientsIndex: FC = () => {
       setLoading(true);
 
       try {
-        const rows = await IngredientService.GetAll();
+        const rows = await RecipeService.GetAllRecipes(1000000);
 
         if (!active) return;
 
@@ -108,24 +127,18 @@ export const AdminIngredientsIndex: FC = () => {
   }, []);
 
   //#endregion
-  //#region Types
+  //#region Data of Authors
 
-  const [ingredientTypes, setIngredientTypes] = useState<
-    Ingredient_TypeEntity[]
-  >([]);
+  const [authors, setAuthors] = useState<AccountEntity[]>([]);
   useEffect(() => {
     let active = true;
 
     (async () => {
-      try {
-        const types = await IngredientTypeService.GetAllIngredientTypes();
-        setIngredientTypes(types);
-      } catch (error) {
-        console.log(error);
-      }
-    })();
+      const users = await AccountService.GetAllUser(1000000);
 
-    if (!active) return;
+      if (!active) return;
+      setAuthors(users || []);
+    })();
 
     return () => {
       active = false;
@@ -136,14 +149,14 @@ export const AdminIngredientsIndex: FC = () => {
 
   return (
     <CommonIndexPage
-      title={'Nguyên liệu'}
+      title={'Công thức'}
       rows={rows}
       rowCount={rowCount}
       columns={columns}
       loading={loading}
       dialogProps={{
-        title: 'Xóa nguyên liệu',
-        content: 'Bạn có chắc muốn xóa nguyên liệu này?',
+        title: 'Xóa công thức',
+        content: 'Bạn có chắc muốn xóa công thức này?',
       }}
       onCreateClick={handleCreateRow}
       onViewClick={handleViewRow}

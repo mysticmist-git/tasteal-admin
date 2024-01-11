@@ -21,7 +21,6 @@ import { useCallback, useMemo, useState } from 'react';
 export type CommonIndexPageProps<RowType> = {
   title: string;
   rows: RowType[];
-  paginationModel: { page: number; pageSize: number };
   rowCount: number;
   columns: GridColDef[];
   loading: boolean;
@@ -29,7 +28,6 @@ export type CommonIndexPageProps<RowType> = {
     title: string;
     content: string;
   };
-  onPaginationModelChange?: (model: { page: number; pageSize: number }) => void;
   onCreateClick?: () => void;
   onViewClick?: (id: number) => void;
   onDeleteClick?: (id: number) => Promise<void>;
@@ -39,11 +37,9 @@ export function CommonIndexPage<RowType>({
   title,
   rows,
   rowCount,
-  paginationModel,
   loading,
   columns: paramColumn,
   dialogProps,
-  onPaginationModelChange,
   onCreateClick,
   onViewClick,
   onDeleteClick,
@@ -138,9 +134,7 @@ export function CommonIndexPage<RowType>({
           columns={columns}
           paginationMode="server"
           rowCount={rowCount}
-          paginationModel={paginationModel}
           pageSizeOptions={[10]}
-          onPaginationModelChange={onPaginationModelChange}
           sx={{ minHeight: '100%' }}
         />
       </Box>

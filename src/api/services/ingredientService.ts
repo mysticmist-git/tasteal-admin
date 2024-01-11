@@ -21,10 +21,10 @@ export class IngredientService {
    *
    * @return {Promise<IngredientEntity[]>} A promise that resolves with an array of IngredientEntity objects.
    */
-  public static async GetAll(
-    pageSize: number = 1000000,
+  public static GetAll(
+    pageSize: number = 12,
     page: number = 1
-  ): Promise<IngredientGetRes[]> {
+  ): Promise<IngredientEntity[]> {
     const requestOptions = {
       method: 'POST',
       headers: {
@@ -35,15 +35,10 @@ export class IngredientService {
         page: page,
       } as PageReq),
     };
-    return await fetch(ApiEndPoint.GetAllIngredients(), requestOptions)
+    return fetch(ApiEndPoint.GetAllIngredients(), requestOptions)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-
         return data.ingredients;
-      })
-      .catch((error) => {
-        console.log(error);
       });
   }
   public static async Get(
