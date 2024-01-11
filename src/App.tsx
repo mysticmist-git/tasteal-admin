@@ -14,6 +14,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import theme from "./theme";
 import AdminUsersIndex from "./pages/users/AdminUsersIndex";
+import AdminUsersViewer from "./pages/users/AdminUsersViewer";
 
 const App = () => {
   return (
@@ -161,27 +162,51 @@ const App = () => {
                     />
                   </Route>
 
-                  <Route
-                    path="/users"
-                    element={
-                      <ProtectedRoute>
-                        <AdminLayout>
-                          <AdminUsersIndex />
-                        </AdminLayout>
-                      </ProtectedRoute>
-                    }
-                  ></Route>
+                  <Route path="/users">
+                    <Route
+                      index
+                      element={
+                        <ProtectedRoute>
+                          <AdminLayout>
+                            <AdminUsersIndex />
+                          </AdminLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path=":id"
+                      element={
+                        <ProtectedRoute>
+                          <AdminLayout>
+                            <AdminUsersViewer />
+                          </AdminLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
 
-                  <Route
-                    path="/comments"
-                    element={
-                      <ProtectedRoute>
-                        <AdminLayout>
-                          <>Bình luận</>
-                        </AdminLayout>
-                      </ProtectedRoute>
-                    }
-                  ></Route>
+                  <Route path="/comments">
+                    <Route
+                      index
+                      element={
+                        <ProtectedRoute>
+                          <AdminLayout>
+                            <AdminUsersIndex />
+                          </AdminLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path=":id"
+                      element={
+                        <ProtectedRoute>
+                          <AdminLayout>
+                            <AdminUsersViewer />
+                          </AdminLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
                 </Route>
                 <Route path="/login" element={<Login />} />
               </Routes>

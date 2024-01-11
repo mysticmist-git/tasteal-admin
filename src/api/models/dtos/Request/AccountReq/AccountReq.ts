@@ -6,6 +6,7 @@ type AccountReq = {
   link?: string;
   slogan?: string;
   quote?: string;
+  isDeleted?: boolean;
 };
 
 export default AccountReq;

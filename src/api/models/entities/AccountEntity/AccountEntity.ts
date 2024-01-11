@@ -6,29 +6,31 @@ export type AccountEntity = {
   link?: string;
   slogan?: string;
   quote?: string;
+  isDeleted?: boolean;
+  id?: string;
 };
 
-export function isAccountEntityFullInfor(item: AccountEntity) {
-  for (const key in item) {
-    if (Object.prototype.hasOwnProperty.call(item, key)) {
-      const value = item[key];
-      if (value == null || value == '' || typeof value == 'undefined') {
-        // If the value is not null or undefined, return true
-        return false;
-      }
-    }
-  }
-  return true;
-}
+// export function isAccountEntityFullInfor(item: AccountEntity) {
+//   for (const key in item) {
+//     if (Object.prototype.hasOwnProperty.call(item, key)) {
+//       const value = item[key];
+//       if (value == null || value == '' || typeof value == 'undefined') {
+//         // If the value is not null or undefined, return true
+//         return false;
+//       }
+//     }
+//   }
+//   return true;
+// }
 
 export function InitAccountEntity() {
   return {
-    uid: '',
-    name: '',
-    avatar: '',
-    introduction: '',
-    link: '',
-    slogan: '',
-    quote: '',
+    uid: "",
+    name: "",
+    avatar: "",
+    introduction: "",
+    link: "",
+    slogan: "",
+    quote: "",
   } as AccountEntity;
 }

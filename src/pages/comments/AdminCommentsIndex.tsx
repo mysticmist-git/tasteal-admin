@@ -1,5 +1,5 @@
-import { AccountEntity } from "@/api/models/entities/AccountEntity/AccountEntity";
-import { AccountService } from "@/api/services/accountService";
+import { CommentEntity } from "@/api/models/entities/CommentEntity/CommentEntity";
+import { CommentService } from "@/api/services/commentService";
 import { CommonIndexPage } from "@/components/features/admin";
 import { useSnackbarService } from "@/hooks";
 import { PageRoute } from "@/lib/constants/common";
@@ -7,18 +7,19 @@ import { GridColDef } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function AdminUsersIndex() {
+function AdminCommentsIndex() {
   //#region
 
   const snackbarAlert = useSnackbarService();
 
   //#endregion
+
   //#region Datagrid columns
 
   const accountColumns: GridColDef[] = [
     {
-      field: "uid",
-      headerName: "UID",
+      field: "id",
+      headerName: "ID",
     },
     {
       field: "name",
@@ -43,7 +44,7 @@ function AdminUsersIndex() {
 
   //#region Pagination
 
-  const [rows, setRows] = useState<AccountEntity[]>([]);
+  const [rows, setRows] = useState<CommentEntity[]>([]);
   const [rowCount, setRowCount] = useState(0);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -57,17 +58,17 @@ function AdminUsersIndex() {
       setLoading(true);
 
       (async () => {
-        let accounts: AccountEntity[];
+        let comments: CommentEntity[];
         try {
-          accounts = await AccountService.GetAllUser(1000, 1);
+          comments = await CommentService.GetAll(2000, 1);
         } catch (err) {
           console.log(err);
-          accounts = [];
+          comments = [];
         }
         if (!active) return;
 
-        setRows(accounts.map((account) => ({ ...account, id: account.uid })));
-        setRowCount(accounts.length);
+        setRows(comments);
+        setRowCount(comments.length);
         setLoading(false);
       })();
     })();
@@ -80,38 +81,26 @@ function AdminUsersIndex() {
   //#endregion
 
   const navigate = useNavigate();
-  // const handleCreateClick = () => {
-  //   navigate(PageRoute.Users.Create);
-  // };
   const handleViewClick = (id: any) => {
-    navigate(PageRoute.Users.View(id));
+    navigate(PageRoute.Comments.View(id));
   };
   const handleDeleteClick = async (id: any) => {
     setLoading(true);
     try {
-      const user = rows.find((row) => row.uid === id);
+      const comment = rows.find((row) => row.id === id);
 
-      if (!user) {
+      if (!comment) {
         return;
       }
-      const deletedAccount = await AccountService.UpdateUser({
-        uid: user.uid,
-        isDeleted: true,
-        name: user.name,
-        introduction: user.introduction,
-        avatar: user.avatar,
-        link: user.link,
-        slogan: user.slogan,
-        quote: user.quote,
-      });
+      const deletedAccount = await CommentService.SoftDelete(id);
       if (deletedAccount) {
-        snackbarAlert(`Vô hiệu ${user.name} thành công!`, "success");
+        snackbarAlert(`Vô hiệu comment thành công!`, "success");
       }
       setRows(
         rows.map((row) =>
-          row.uid === user.uid
+          row.id === comment.id
             ? {
-                ...user,
+                ...comment,
                 isDeleted: true,
               }
             : row
@@ -127,13 +116,13 @@ function AdminUsersIndex() {
 
   return (
     <CommonIndexPage
-      title={"Người dùng"}
+      title={"Bình luận"}
       rows={rows}
       columns={accountColumns}
       loading={loading}
       dialogProps={{
-        title: "Vô hiệu người dùng",
-        content: "Bạn có chắc muốn vô hiệu ngươi dùng này?",
+        title: "Ẩn comment?",
+        content: "Bạn có chắc muốn ẩn comment này?",
       }}
       paginationModel={paginationModel}
       rowCount={rowCount}
@@ -145,4 +134,4 @@ function AdminUsersIndex() {
   );
 }
 
-export default AdminUsersIndex;
+export default AdminCommentsIndex;

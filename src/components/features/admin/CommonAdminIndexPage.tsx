@@ -1,5 +1,5 @@
-import { FormTitle } from '@/components/shared/ui/labels';
-import { Add, Close, Delete, RemoveRedEye } from '@mui/icons-material';
+import { FormTitle } from "@/components/shared/ui/labels";
+import { Add, Close, Delete, RemoveRedEye } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -14,9 +14,9 @@ import {
   Slide,
   Stack,
   Typography,
-} from '@mui/material';
-import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
-import { useCallback, useMemo, useState } from 'react';
+} from "@mui/material";
+import { DataGrid, GridActionsCellItem, GridColDef } from "@mui/x-data-grid";
+import { useCallback, useMemo, useState } from "react";
 
 export type CommonIndexPageProps<RowType> = {
   title: string;
@@ -31,8 +31,9 @@ export type CommonIndexPageProps<RowType> = {
   };
   onPaginationModelChange?: (model: { page: number; pageSize: number }) => void;
   onCreateClick?: () => void;
-  onViewClick?: (id: number) => void;
-  onDeleteClick?: (id: number) => Promise<void>;
+  onViewClick?: (id: any) => void;
+  onDeleteClick?: (id: any) => Promise<void>;
+  hideAddButton?: boolean;
 };
 
 export function CommonIndexPage<RowType>({
@@ -47,6 +48,7 @@ export function CommonIndexPage<RowType>({
   onCreateClick,
   onViewClick,
   onDeleteClick,
+  hideAddButton,
 }: CommonIndexPageProps<RowType>) {
   //#region Hooks
 
@@ -80,7 +82,7 @@ export function CommonIndexPage<RowType>({
     onCreateClick && onCreateClick();
   }, [onCreateClick]);
   const handleView = useCallback(
-    (id: number) => {
+    (id: any) => {
       onViewClick && onViewClick(id);
     },
     [onViewClick]
@@ -89,15 +91,17 @@ export function CommonIndexPage<RowType>({
     () => [
       ...paramColumn,
       {
-        field: 'action',
-        type: 'actions',
-        headerName: 'Hành động',
+        field: "action",
+        type: "actions",
+        headerName: "Hành động",
         flex: 1,
         getActions: (params) => [
           <GridActionsCellItem
             icon={<RemoveRedEye />}
             label="Mở"
-            onClick={() => handleView(params.row.id)}
+            onClick={() => {
+              handleView(params.row.id);
+            }}
           />,
           <GridActionsCellItem
             icon={<Delete />}
@@ -116,14 +120,18 @@ export function CommonIndexPage<RowType>({
   //#endregion
 
   return (
-    <Box p={4} display="flex" flexDirection={'column'} gap={1}>
-      <Stack direction="row" justifyContent={'space-between'}>
+    <Box p={4} display="flex" flexDirection={"column"} gap={1}>
+      <Stack direction="row" justifyContent={"space-between"}>
         <FormTitle>{title}</FormTitle>
         <Button
           startIcon={<Add />}
           variant="contained"
           onClick={handleCreate}
-          sx={{ width: 100, borderRadius: 4 }}
+          sx={{
+            width: 100,
+            borderRadius: 4,
+            display: hideAddButton ? "none" : "",
+          }}
         >
           Thêm
         </Button>
@@ -141,7 +149,7 @@ export function CommonIndexPage<RowType>({
           paginationModel={paginationModel}
           pageSizeOptions={[10]}
           onPaginationModelChange={onPaginationModelChange}
-          sx={{ minHeight: '100%' }}
+          sx={{ minHeight: "100%" }}
         />
       </Box>
       <Dialog
@@ -151,17 +159,17 @@ export function CommonIndexPage<RowType>({
         PaperProps={{
           sx: {
             borderRadius: 4,
-            width: '50%',
+            width: "50%",
           },
         }}
       >
         <DialogTitle>
           <Stack
             direction="row"
-            justifyContent={'space-between'}
-            alignItems={'center'}
+            justifyContent={"space-between"}
+            alignItems={"center"}
           >
-            <Typography typography={'h6'}>{dialogProps.title}</Typography>
+            <Typography typography={"h6"}>{dialogProps.title}</Typography>
             <IconButton onClick={handleDeleteClose} disabled={loading}>
               <Close />
             </IconButton>
@@ -188,9 +196,9 @@ export function CommonIndexPage<RowType>({
             disabled={loading}
           >
             {loading ? (
-              <CircularProgress size={24} sx={{ color: 'white' }} />
+              <CircularProgress size={24} sx={{ color: "white" }} />
             ) : (
-              'Xóa'
+              "Xóa"
             )}
           </Button>
           <Button

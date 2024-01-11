@@ -29,9 +29,8 @@ export const PageRoute = {
   },
   Users: {
     Index: "/users",
-    Create: "/users/create",
-    View: (id: number) => `/users/${id}`,
-    Edit: (id: number) => `/users/${id}/edit`,
+    View: (id: any) => `/users/${id}`,
+    Edit: (id: any) => `/users/${id}/edit`,
   },
   Comments: {
     Index: "/comments",
