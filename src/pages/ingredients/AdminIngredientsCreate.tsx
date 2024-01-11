@@ -285,7 +285,11 @@ const AdminIngredientCreate: FC = () => {
             <ArrowBack />
           </IconButton>
           <FormTitle>
-            {mode === 'create' ? 'Thêm nguyên liệu' : 'Sửa nguyên liệu'}
+            {mode === 'create'
+              ? 'Thêm nguyên liệu'
+              : mode === 'edit'
+                ? 'Sửa nguyên liệu'
+                : 'Nguyên liệu'}
           </FormTitle>
         </Stack>
 

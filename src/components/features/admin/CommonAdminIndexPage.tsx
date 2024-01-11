@@ -21,7 +21,6 @@ import { useCallback, useMemo, useState } from 'react';
 export type CommonIndexPageProps<RowType> = {
   title: string;
   rows: RowType[];
-  rowCount: number;
   columns: GridColDef[];
   loading: boolean;
   dialogProps: {
@@ -36,7 +35,6 @@ export type CommonIndexPageProps<RowType> = {
 export function CommonIndexPage<RowType>({
   title,
   rows,
-  rowCount,
   loading,
   columns: paramColumn,
   dialogProps,
@@ -132,9 +130,14 @@ export function CommonIndexPage<RowType>({
           loading={loading}
           rows={rows}
           columns={columns}
-          paginationMode="server"
-          rowCount={rowCount}
-          pageSizeOptions={[10]}
+          pageSizeOptions={[10, 25, 50]}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 10,
+              },
+            },
+          }}
           sx={{ minHeight: '100%' }}
         />
       </Box>

@@ -100,7 +100,6 @@ export const AdminRecipesIndex: FC = () => {
   //#region Data
 
   const [rows, setRows] = useState<RecipeEntity[]>([]);
-  const [rowCount, setRowCount] = useState(0);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     let active = true;
@@ -115,7 +114,6 @@ export const AdminRecipesIndex: FC = () => {
 
         setLoading(false);
         setRows(rows ?? []);
-        setRowCount(rows.length || 0);
       } catch (err) {
         console.log(err);
       }
@@ -151,7 +149,6 @@ export const AdminRecipesIndex: FC = () => {
     <CommonIndexPage
       title={'Công thức'}
       rows={rows}
-      rowCount={rowCount}
       columns={columns}
       loading={loading}
       dialogProps={{

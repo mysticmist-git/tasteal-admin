@@ -1,8 +1,8 @@
-import { OccasionEntity } from '@/lib/models/entities/OccasionEntity/OccasionEntity';
-import { RecipeDirectionReq } from '../RecipeDirectionReq/RecipeDirectionReq';
-import { Recipe_IngredientReq } from '../Recipe_IngredientReq/Recipe_IngredientReq';
-import { PageReq } from '../PageReq/PageReq';
-import { AccountEntity } from '@/lib/models/entities/AccountEntity/AccountEntity';
+import { PageReq } from '@/api/models/dtos/Request/PageReq/PageReq';
+import { RecipeDirectionReq } from '@/api/models/dtos/Request/RecipeDirectionReq/RecipeDirectionReq';
+import { Recipe_IngredientReq } from '@/api/models/dtos/Request/Recipe_IngredientReq/Recipe_IngredientReq';
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
+import { OccasionEntity } from '@/api/models/entities/OccasionEntity/OccasionEntity';
 
 export type RecipeReq = {
   name: string;

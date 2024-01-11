@@ -1,5 +1,5 @@
-import { OccasionEntity } from '@/lib/models/entities/OccasionEntity/OccasionEntity';
-import { RecipeEntity } from '@/lib/models/entities/RecipeEntity/RecipeEntity';
+import { OccasionEntity } from '@/api/models/entities/OccasionEntity/OccasionEntity';
+import { RecipeEntity } from '@/api/models/entities/RecipeEntity/RecipeEntity';
 import { Nutrition_InfoEntity } from '../../../entities/Nutrition_InfoEntity/Nutrition_InfoEntity';
 import { AuthorRes } from '../AuthorRes/AuthorRes';
 import { CommentRes } from '../CommentRes/CommentRes';

@@ -7,6 +7,7 @@ import AdminIngredientCreate from '@/pages/ingredients/AdminIngredientsCreate';
 import { AdminIngredientsIndex } from '@/pages/ingredients/AdminIngredientsIndex';
 import AdminOccasionsCreate from '@/pages/occasions/AdminOccasionsCreate';
 import { AdminOccasionsIndex } from '@/pages/occasions/AdminOccasionsIndex';
+import AdminRecipesCreate from '@/pages/recipes/AdminRecipesCreate';
 import { AdminRecipesIndex } from '@/pages/recipes/AdminRecipesIndex';
 import { SnackbarProvider } from '@/provider/SnackbarProvider';
 import { CssBaseline, ThemeProvider } from '@mui/material';
@@ -50,17 +51,7 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <AdminLayout>
-                            <AdminIngredientCreate />
-                          </AdminLayout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="create"
-                      element={
-                        <ProtectedRoute>
-                          <AdminLayout>
-                            <AdminIngredientCreate />
+                            <AdminRecipesCreate />
                           </AdminLayout>
                         </ProtectedRoute>
                       }

@@ -1,15 +1,13 @@
-import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
+import { RecipeRes } from '@/api/models/dtos/Response/RecipeRes/RecipeRes';
 import { IngredientService } from '@/api/services/ingredientService';
-import {
-  AdminIngredientForm,
-  IngredientForm,
-} from '@/components/features/admin';
+import { RecipeService } from '@/api/services/recipeService';
+import { AdminRecipeForm, RecipeForm } from '@/components/features/admin';
 import { ImagePicker } from '@/components/shared/ui/files/ImagePicker';
 import { FormLabel, FormTitle } from '@/components/shared/ui/labels';
 import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
 import { deleteImage } from '@/lib/firebase';
-import { AdminIngredientHelper } from '@/lib/types/admin/ingredients/AdminIngredientHelper';
+import { AdminRecipeHelper } from '@/lib/types/admin/recipes/AdminRecipeHelper';
 import { FormMode } from '@/lib/types/admin/shared';
 import { ArrowBack, Close } from '@mui/icons-material';
 import {
@@ -31,31 +29,20 @@ import { Stack } from '@mui/system';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-const DEFAULT_FORM: IngredientForm = {
+const DEFAULT_FORM: RecipeForm = {
   name: '',
   image: '',
-  isLiquid: false,
-  ratio: 0,
-  type_id: 0,
-  nutrition_info: {
-    calories: 0,
-    fat: 0,
-    saturated_fat: 0,
-    trans_fat: 0,
-    cholesterol: 0,
-    carbohydrates: 0,
-    fiber: 0,
-    sugars: 0,
-    protein: 0,
-    sodium: 0,
-    vitaminD: 0,
-    calcium: 0,
-    iron: 0,
-    potassium: 0,
-  },
+  serving_size: 1,
+  ingredients: [],
+  directions: [],
+  introduction: '',
+  totalTime: 0,
+  author_note: '',
+  is_private: true,
+  author: '',
 };
 
-const AdminIngredientCreate: FC = () => {
+const AdminRecipesCreate: FC = () => {
   //#region Hooks
 
   const snackbarAlert = useSnackbarService();
@@ -95,10 +82,10 @@ const AdminIngredientCreate: FC = () => {
   //#endregion
   //#region Form
 
-  const [form, setForm] = useState<IngredientForm>(DEFAULT_FORM);
+  const [form, setForm] = useState<RecipeForm>(DEFAULT_FORM);
 
-  const [old, setOld] = useState<IngredientEntity>();
-  const [oldForm, setOldForm] = useState<IngredientForm>();
+  const [old, setOld] = useState<RecipeRes>();
+  const [oldForm, setOldForm] = useState<RecipeForm>();
 
   useEffect(() => {
     if (!id) {
@@ -117,12 +104,12 @@ const AdminIngredientCreate: FC = () => {
         setMode('view');
       }
       try {
-        const ingredient = await IngredientService.GetById(parseInt(id));
+        const recipe = await RecipeService.GetById(parseInt(id));
         if (!active) return;
 
-        const gotForm = AdminIngredientHelper.CreateFormObject(ingredient);
+        const gotForm = AdminRecipeHelper.CreateFormObject(recipe);
         setForm(gotForm);
-        setOld(ingredient);
+        setOld(recipe);
         setOldForm(gotForm);
       } catch {
         setForm(DEFAULT_FORM);
@@ -138,67 +125,33 @@ const AdminIngredientCreate: FC = () => {
   }, [id]);
 
   const validate = () => {
-    if (!form.name) {
-      snackbarAlert('Vui lòng nhập tên nguyên liệu!', 'warning');
-      return false;
-    }
-
-    if ((mode === 'create' || mode === 'edit') && !form.type_id) {
-      snackbarAlert('Vui lòng chọn loại nguyên liệu!', 'warning');
-      return false;
-    }
-    return true;
-  };
-
-  const handleCreateSubmit = async () => {
-    if (!validate()) return;
-
-    if (!form.image) {
-      snackbarAlert('Vui lòng tải ảnh nguyên liệu!', 'warning');
-      return;
-    }
-
-    setDisabled(true);
-    setProcessing(true);
-    let createdId = '';
-    try {
-      const reqBody = await AdminIngredientHelper.CreatePostReq(form);
-
-      const created = await IngredientService.Add(reqBody);
-      createdId = created.id.toString();
-      snackbarAlert('Nguyên liệu thêm thành công!', 'success');
-    } catch (err) {
-      snackbarAlert('Nguyên liệu mới đã không được thêm!', 'warning');
-      return;
-    } finally {
-      setDisabled(false);
-      setProcessing(false);
-      if (!createdId) {
-        snackbarAlert('Nguyên liệu đã thêm nhưng id rỗng!');
-      }
-      switchModeToView(createdId);
-    }
+    snackbarAlert(
+      '[DEBUG] This is prevent you from actually do anything',
+      'warning'
+    );
+    return false;
   };
 
   const handleUpdateSubmit = async () => {
+    if (!id) return;
     if (!old) return;
     if (!validate()) return;
     if (!form.image) {
-      snackbarAlert('Vui loại tải ảnh nguyên liệu!', 'warning');
+      snackbarAlert('Vui loại tải ảnh Công thức!', 'warning');
       return;
     }
 
     setDisabled(true);
     setProcessing(true);
     try {
-      const reqBody = await AdminIngredientHelper.CreatePutReq(form, old);
-      await IngredientService.Update(reqBody);
+      const reqBody = await AdminRecipeHelper.CreatePutReq(form, old);
+      await RecipeService.Update(Number(id), reqBody);
 
       switchModeToView(id);
-      snackbarAlert('Nguyên liệu cập nhật thành công!', 'success');
+      snackbarAlert('Công thức cập nhật thành công!', 'success');
     } catch (err) {
       console.log(err);
-      snackbarAlert('Nguyên liệu đã không được cập nhật', 'warning');
+      snackbarAlert('Công thức đã không được cập nhật', 'warning');
     } finally {
       setDisabled(false);
       setProcessing(false);
@@ -244,7 +197,7 @@ const AdminIngredientCreate: FC = () => {
   };
   const handleDelete = async () => {
     if (!id) {
-      snackbarAlert('Nguyên liệu đã không được xóa', 'warning');
+      snackbarAlert('Công thức đã không được xóa', 'warning');
       return;
     }
 
@@ -253,11 +206,11 @@ const AdminIngredientCreate: FC = () => {
     try {
       const deleted = await IngredientService.DeleteIngredient(Number(id));
       deleted.image && deleteImage(deleted.image);
-      snackbarAlert('Nguyên liệu đã được xóa thành công', 'success');
+      snackbarAlert('Công thức đã được xóa thành công', 'success');
       navigate(PageRoute.Ingredients.Index);
     } catch (err) {
       console.log(err);
-      snackbarAlert('Nguyên liệu đã không được xóa', 'warning');
+      snackbarAlert('Công thức đã không được xóa', 'warning');
     } finally {
       setDisabled(false);
       setProcessing(false);
@@ -285,7 +238,11 @@ const AdminIngredientCreate: FC = () => {
             <ArrowBack />
           </IconButton>
           <FormTitle>
-            {mode === 'create' ? 'Thêm nguyên liệu' : 'Sửa nguyên liệu'}
+            {mode === 'create'
+              ? 'Thêm công thức'
+              : mode === 'edit'
+                ? 'Sửa công thức'
+                : 'Công thức'}
           </FormTitle>
         </Stack>
 
@@ -316,7 +273,7 @@ const AdminIngredientCreate: FC = () => {
             </Stack>
           </Grid>
           <Grid item xs={9}>
-            <AdminIngredientForm
+            <AdminRecipeForm
               value={form}
               setValue={setForm}
               loading={loading}
@@ -332,20 +289,6 @@ const AdminIngredientCreate: FC = () => {
           width="100%"
           gap={1}
         >
-          {mode === 'create' && (
-            <Button
-              variant="contained"
-              onClick={handleCreateSubmit}
-              sx={{ width: 240 }}
-              disabled={allDisabled}
-            >
-              {processing ? (
-                <CircularProgress size={24} sx={{ color: 'white' }} />
-              ) : (
-                'Thêm'
-              )}
-            </Button>
-          )}
           {mode === 'view' && (
             <Button
               variant="contained"
@@ -412,7 +355,7 @@ const AdminIngredientCreate: FC = () => {
             justifyContent={'space-between'}
             alignItems={'center'}
           >
-            <Typography typography={'h6'}>Xóa nguyên liệu</Typography>
+            <Typography typography={'h6'}>Xóa Công thức</Typography>
             <IconButton onClick={handleDeleteDialogClose} disabled={loading}>
               <Close />
             </IconButton>
@@ -424,7 +367,7 @@ const AdminIngredientCreate: FC = () => {
           }}
         />
         <DialogContent>
-          <DialogContentText>{`Nguyên liệu "${
+          <DialogContentText>{`Công thức "${
             form?.id || 'loading'
           } - ${form?.name}" sẽ bị xóa!`}</DialogContentText>
         </DialogContent>
@@ -459,4 +402,4 @@ const AdminIngredientCreate: FC = () => {
   );
 };
 
-export default AdminIngredientCreate;
+export default AdminRecipesCreate;

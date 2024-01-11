@@ -1,4 +1,4 @@
-import { IngredientEntity } from '@/lib/models/entities/IngredientEntity/IngredientEntity';
+import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
 import { PageReq } from '../PageReq/PageReq';
 
 export type recommendRecipeReq = {

@@ -1,6 +1,6 @@
-import { CookBookEntity } from '@/lib/models/entities/CookBookEntity/CookBookEntity';
+import { CookBookEntity } from '@/api/models/entities/CookBookEntity/CookBookEntity';
 
 export type CookBookRes = {
-    id: CookBookEntity['id'];
-    name: CookBookEntity['name'];
+  id: CookBookEntity['id'];
+  name: CookBookEntity['name'];
 };

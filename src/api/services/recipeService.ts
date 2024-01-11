@@ -191,7 +191,7 @@ export class RecipeService {
   /**
    * Create a new recipe
    */
-  public static async CreateRecipe(postData: RecipeReq) {
+  public static async CreateRecipe(postData: RecipeReq): Promise<RecipeEntity> {
     return await fetch(ApiEndPoint.CreateRecipe(), {
       method: 'POST',
       headers: {

@@ -36,7 +36,6 @@ export const AdminOccasionsIndex: FC = () => {
   //#region Pagination
 
   const [rows, setRows] = useState<OccasionEntity[]>([]);
-  const [rowCount, setRowCount] = useState(0);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     let active = true;
@@ -55,7 +54,6 @@ export const AdminOccasionsIndex: FC = () => {
         if (!active) return;
 
         setRows(occasions.sort((a, b) => a.id - b.id));
-        setRowCount(occasions.length);
         setLoading(false);
       })();
     })();
@@ -103,7 +101,6 @@ export const AdminOccasionsIndex: FC = () => {
         title: 'Xóa dịp lễ',
         content: 'Bạn có chắc muốn xóa dịp lễ này?',
       }}
-      rowCount={rowCount}
       onCreateClick={handleCreateClick}
       onViewClick={handleViewClick}
       onDeleteClick={handleDeleteClick}

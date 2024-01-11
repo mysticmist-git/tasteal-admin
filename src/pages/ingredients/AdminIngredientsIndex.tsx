@@ -78,10 +78,9 @@ export const AdminIngredientsIndex: FC = () => {
   ];
 
   //#endregion
-  //#region Pagination
+  //#region Data
 
   const [rows, setRows] = useState<IngredientEntity[]>([]);
-  const [rowCount, setRowCount] = useState(0);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     let active = true;
@@ -90,13 +89,12 @@ export const AdminIngredientsIndex: FC = () => {
       setLoading(true);
 
       try {
-        const rows = await IngredientService.GetAll();
+        const rows = await IngredientService.GetAll(1000000);
 
         if (!active) return;
 
         setLoading(false);
         setRows(rows ?? []);
-        setRowCount(rows.length || 0);
       } catch (err) {
         console.log(err);
       }
@@ -138,7 +136,6 @@ export const AdminIngredientsIndex: FC = () => {
     <CommonIndexPage
       title={'Nguyên liệu'}
       rows={rows}
-      rowCount={rowCount}
       columns={columns}
       loading={loading}
       dialogProps={{

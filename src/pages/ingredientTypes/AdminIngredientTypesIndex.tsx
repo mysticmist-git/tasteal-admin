@@ -31,7 +31,6 @@ export const AdminIngredientTypesIndex: FC = () => {
   //#region Pagination
 
   const [rows, setRows] = useState<Ingredient_TypeEntity[]>([]);
-  const [rowCount, setRowCount] = useState(0);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     let active = true;
@@ -50,7 +49,6 @@ export const AdminIngredientTypesIndex: FC = () => {
         if (!active) return;
 
         setRows(rows);
-        setRowCount(rows.length);
         setLoading(false);
       })();
     })();
@@ -102,7 +100,6 @@ export const AdminIngredientTypesIndex: FC = () => {
         title: 'Xóa loại nguyên liệu',
         content: 'Bạn có chắc muốn xóa loại nguyên liệu này?',
       }}
-      rowCount={rowCount}
       onCreateClick={handleCreateClick}
       onViewClick={handleViewClick}
       onDeleteClick={handleDeleteClick}
