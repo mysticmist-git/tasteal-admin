@@ -23,6 +23,7 @@ import {
   Divider,
   Grid,
   IconButton,
+  Skeleton,
   Slide,
   Typography,
 } from '@mui/material';
@@ -69,7 +70,7 @@ const AdminIngredientCreate: FC = () => {
 
     setMode('edit');
     setOldForm(form);
-    let path: string = PageRoute.Occasions.Edit(Number(id));
+    let path: string = PageRoute.Ingredients.Edit(Number(id));
     path = path.replace(':id', form?.id?.toString() || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
@@ -77,7 +78,7 @@ const AdminIngredientCreate: FC = () => {
     if (!id) return;
 
     setMode('view');
-    let path: string = PageRoute.Occasions.View(Number(id));
+    let path: string = PageRoute.Ingredients.View(Number(id));
     path = path.replace(':id', id || '');
     navigate(path, { replace: true, preventScrollReset: true });
   };
@@ -116,13 +117,13 @@ const AdminIngredientCreate: FC = () => {
         setMode('view');
       }
       try {
-        console.log('run');
-        const occasion = await IngredientService.GetById(parseInt(id));
-        console.log(occasion);
+        const ingredient = await IngredientService.GetById(parseInt(id));
         if (!active) return;
 
-        setForm(AdminIngredientHelper.CreateFormObject(occasion));
-        setOld(occasion);
+        const gotForm = AdminIngredientHelper.CreateFormObject(ingredient);
+        setForm(gotForm);
+        setOld(ingredient);
+        setOldForm(gotForm);
       } catch {
         setForm(DEFAULT_FORM);
       } finally {
@@ -205,7 +206,10 @@ const AdminIngredientCreate: FC = () => {
   };
 
   const handleCancelUpdate = () => {
+    console.log('run');
+    console.log(oldForm);
     if (!oldForm) return;
+    console.log('run');
 
     setForm(oldForm);
     switchModeToView(id);
@@ -250,7 +254,7 @@ const AdminIngredientCreate: FC = () => {
       const deleted = await IngredientService.DeleteIngredient(Number(id));
       deleted.image && deleteImage(deleted.image);
       snackbarAlert('Nguyên liệu đã được xóa thành công', 'success');
-      navigate(PageRoute.Occasions.Index);
+      navigate(PageRoute.Ingredients.Index);
     } catch (err) {
       console.log(err);
       snackbarAlert('Nguyên liệu đã không được xóa', 'warning');
@@ -289,20 +293,33 @@ const AdminIngredientCreate: FC = () => {
           <Grid item xs={3}>
             <Stack>
               <FormLabel>Hình ảnh</FormLabel>
-              <ImagePicker
-                file={form.image instanceof File ? form.image : null}
-                imagePath={typeof form.image === 'string' ? form.image : ''}
-                onChange={(file) => {
-                  setForm((prev) => ({ ...prev, image: file || '' }));
-                }}
-                disabled={disabled}
-              />
+              {loading ? (
+                <Skeleton
+                  width="240px"
+                  height="240px"
+                  variant="rounded"
+                  animation="wave"
+                  sx={{
+                    borderRadius: 4,
+                  }}
+                />
+              ) : (
+                <ImagePicker
+                  file={form.image instanceof File ? form.image : null}
+                  imagePath={typeof form.image === 'string' ? form.image : ''}
+                  onChange={(file) => {
+                    setForm((prev) => ({ ...prev, image: file || '' }));
+                  }}
+                  disabled={disabled}
+                />
+              )}
             </Stack>
           </Grid>
           <Grid item xs={9}>
             <AdminIngredientForm
               value={form}
               setValue={setForm}
+              loading={loading}
               disabled={disabled}
             />
           </Grid>
@@ -373,7 +390,7 @@ const AdminIngredientCreate: FC = () => {
               onClick={() => handleCancelUpdate()}
               disabled={loading || disabled}
             >
-              Stack
+              Hủy
             </Button>
           )}
         </Stack>

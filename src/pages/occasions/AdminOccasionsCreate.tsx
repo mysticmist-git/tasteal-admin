@@ -106,8 +106,10 @@ const AdminOccasionsCreate: FC = () => {
         console.log(occasion);
         if (!active) return;
 
-        setForm(AdminOccasionHelper.CreateFormObject(occasion));
+        const gotForm = AdminOccasionHelper.CreateFormObject(occasion);
+        setForm(gotForm);
         setOld(occasion);
+        setOldForm(gotForm);
       } catch {
         setForm(DEFAULT_FORM);
       } finally {
@@ -146,6 +148,7 @@ const AdminOccasionsCreate: FC = () => {
     let createdId = '';
     try {
       const reqBody = await AdminOccasionHelper.CreatePostReq(form);
+      console.log(reqBody);
 
       const created = await OccasionService.AddOccasion(reqBody);
       createdId = created.id.toString();

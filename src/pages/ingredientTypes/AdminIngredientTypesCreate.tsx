@@ -100,8 +100,10 @@ const AdminIngredientTypesCreate: FC = () => {
         );
         if (!active) return;
 
-        setForm(AdminIngredientTypeHelper.CreateFormObject(occasion));
+        const gotForm = AdminIngredientTypeHelper.CreateFormObject(occasion);
+        setForm(gotForm);
         setOld(occasion);
+        setOldForm(gotForm);
       } catch {
         setForm(DEFAULT_FORM);
       } finally {

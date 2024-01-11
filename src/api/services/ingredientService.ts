@@ -67,7 +67,7 @@ export class IngredientService {
       if (res.ok) {
         return res.json();
       }
-      throw new Error('Failed to get ingredients');
+      throw new Error(`Failed to get ingredients, ${res.statusText}`);
     });
   }
   public static async GetById(id: number): Promise<IngredientEntity> {
@@ -90,7 +90,10 @@ export class IngredientService {
       },
     };
     return await fetch(ApiEndPoint.DeleteIngredient(id), requestOptions)
-      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        return res.json();
+      })
       .then((data) => {
         console.log(data);
 
