@@ -1,21 +1,23 @@
-import ProtectedRoute from '@/components/features/auth/ProtectedRoute';
-import { AdminLayout } from '@/components/shared/layout';
-import Login from '@/pages/Login';
-import AdminIngredientTypesCreate from '@/pages/ingredientTypes/AdminIngredientTypesCreate';
-import { AdminIngredientTypesIndex } from '@/pages/ingredientTypes/AdminIngredientTypesIndex';
-import AdminIngredientCreate from '@/pages/ingredients/AdminIngredientsCreate';
-import { AdminIngredientsIndex } from '@/pages/ingredients/AdminIngredientsIndex';
-import AdminOccasionsCreate from '@/pages/occasions/AdminOccasionsCreate';
-import { AdminOccasionsIndex } from '@/pages/occasions/AdminOccasionsIndex';
-import AdminRecipesCreate from '@/pages/recipes/AdminRecipesCreate';
-import { AdminRecipesIndex } from '@/pages/recipes/AdminRecipesIndex';
-import { SnackbarProvider } from '@/provider/SnackbarProvider';
-import { CssBaseline, ThemeProvider } from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import AdminUsersIndex from './pages/users/AdminUsersIndex';
-import theme from './theme';
+import ProtectedRoute from "@/components/features/auth/ProtectedRoute";
+import { AdminLayout } from "@/components/shared/layout";
+import Login from "@/pages/Login";
+import AdminIngredientTypesCreate from "@/pages/ingredientTypes/AdminIngredientTypesCreate";
+import { AdminIngredientTypesIndex } from "@/pages/ingredientTypes/AdminIngredientTypesIndex";
+import AdminIngredientCreate from "@/pages/ingredients/AdminIngredientsCreate";
+import { AdminIngredientsIndex } from "@/pages/ingredients/AdminIngredientsIndex";
+import AdminOccasionsCreate from "@/pages/occasions/AdminOccasionsCreate";
+import { AdminOccasionsIndex } from "@/pages/occasions/AdminOccasionsIndex";
+import AdminRecipesCreate from "@/pages/recipes/AdminRecipesCreate";
+import { AdminRecipesIndex } from "@/pages/recipes/AdminRecipesIndex";
+import { SnackbarProvider } from "@/provider/SnackbarProvider";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import AdminUsersIndex from "./pages/users/AdminUsersIndex";
+import theme from "./theme";
+import AdminUsersViewer from "./pages/users/AdminUsersViewer";
+import AdminCommentsIndex from "./pages/comments/AdminCommentsIndex";
 
 const App = () => {
   return (
@@ -35,7 +37,7 @@ const App = () => {
                     }
                   />
 
-                  <Route path={'/recipes'}>
+                  <Route path={"/recipes"}>
                     <Route
                       index
                       element={
@@ -58,7 +60,7 @@ const App = () => {
                     />
                   </Route>
 
-                  <Route path={'/ingredients'}>
+                  <Route path={"/ingredients"}>
                     <Route
                       index
                       element={
@@ -101,7 +103,7 @@ const App = () => {
                     />
                   </Route>
 
-                  <Route path={'/ingredient-types'}>
+                  <Route path={"/ingredient-types"}>
                     <Route
                       index
                       element={
@@ -144,7 +146,7 @@ const App = () => {
                     />
                   </Route>
 
-                  <Route path={'/occasions'}>
+                  <Route path={"/occasions"}>
                     <Route
                       index
                       element={
@@ -187,27 +189,41 @@ const App = () => {
                     />
                   </Route>
 
-                  <Route
-                    path="/users"
-                    element={
-                      <ProtectedRoute>
-                        <AdminLayout>
-                          <AdminUsersIndex />
-                        </AdminLayout>
-                      </ProtectedRoute>
-                    }
-                  ></Route>
+                  <Route path="/users">
+                    <Route
+                      index
+                      element={
+                        <ProtectedRoute>
+                          <AdminLayout>
+                            <AdminUsersIndex />
+                          </AdminLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path=":id"
+                      element={
+                        <ProtectedRoute>
+                          <AdminLayout>
+                            <AdminUsersViewer />
+                          </AdminLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
 
-                  <Route
-                    path="/comments"
-                    element={
-                      <ProtectedRoute>
-                        <AdminLayout>
-                          <>Bình luận</>
-                        </AdminLayout>
-                      </ProtectedRoute>
-                    }
-                  ></Route>
+                  <Route path="/comments">
+                    <Route
+                      index
+                      element={
+                        <ProtectedRoute>
+                          <AdminLayout>
+                            <AdminCommentsIndex />
+                          </AdminLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
                 </Route>
                 <Route path="/login" element={<Login />} />
               </Routes>

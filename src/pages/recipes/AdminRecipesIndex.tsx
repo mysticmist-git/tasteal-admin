@@ -106,6 +106,14 @@ export const AdminRecipesIndex: FC = () => {
         authors.find((author) => author.uid === params.value)?.name ||
         'Mặc định',
     },
+    {
+      field: 'isDeleted',
+      headerName: 'Trạng thái',
+      valueFormatter: function (params) {
+        return params.value ? 'Vô hiệu' : 'Hoạt động';
+      },
+      flex: 0.5,
+    },
   ];
 
   //#endregion
@@ -170,7 +178,7 @@ export const AdminRecipesIndex: FC = () => {
       onCreateClick={handleCreateRow}
       onViewClick={handleViewRow}
       onDeleteClick={handleDeleteRow}
-      canDelete={false}
+      canDelete={true}
     />
   );
 };
