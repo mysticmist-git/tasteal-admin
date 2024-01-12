@@ -1,4 +1,3 @@
-import { RecipeRes } from '@/api/models/dtos/Response/RecipeRes/RecipeRes';
 import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
 import { RecipeEntity } from '@/api/models/entities/RecipeEntity/RecipeEntity';
 import { AccountService } from '@/api/services/accountService';
@@ -49,7 +48,8 @@ export const AdminRecipesIndex: FC = () => {
     setLoading(true);
 
     try {
-      const deleteReq = AdminRecipeHelper.createDeleteUpdateReq(recipe);
+      const row = await RecipeService.GetById(recipe.id);
+      const deleteReq = AdminRecipeHelper.createDeleteUpdateReq(row);
       const deleted = await RecipeService.Update(id, deleteReq);
       if (deleted) {
         snackbarAlert(`Công thức này đã bị xóa thành công!`, 'success');
