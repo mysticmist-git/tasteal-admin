@@ -44,7 +44,6 @@ export type CommonIndexPageProps<RowType> = {
     content: string;
   };
   hideAddButton?: boolean;
-  isDeleted?: boolean;
 };
 
 export function CommonIndexPage<RowType>({
@@ -60,7 +59,6 @@ export function CommonIndexPage<RowType>({
   canDelete = true,
   onSoftDeleteClick,
   hideAddButton,
-  isDeleted,
 }: CommonIndexPageProps<RowType>) {
   //#region Hooks
 
@@ -146,8 +144,8 @@ export function CommonIndexPage<RowType>({
             }}
           />,
           <GridActionsCellItem
-            icon={isDeleted ? <VpnKeyRounded /> : <Delete />}
-            label={isDeleted ? 'Mở' : 'Xóa'}
+            icon={params.row.isDeleted ? <VpnKeyRounded /> : <Delete />}
+            label={params.row.isDeleted ? 'Mở' : 'Xóa'}
             onClick={() => {
               setToDeleteRowId(params.row.id);
               setDeleteDialogOpen(true);
@@ -157,14 +155,7 @@ export function CommonIndexPage<RowType>({
         ],
       },
     ],
-    [
-      canDelete,
-      handleView,
-      isDeleted,
-      onSoftDeleteClick,
-      onViewClick,
-      paramColumn,
-    ]
+    [canDelete, handleView, onSoftDeleteClick, onViewClick, paramColumn]
   );
 
   //#endregion
