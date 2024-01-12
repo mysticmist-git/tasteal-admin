@@ -44,11 +44,7 @@ function AdminUsersIndex() {
   //#region Pagination
 
   const [rows, setRows] = useState<AccountEntity[]>([]);
-  const [rowCount, setRowCount] = useState(0);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 10,
-  });
+
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     let active = true;
@@ -67,7 +63,6 @@ function AdminUsersIndex() {
         if (!active) return;
 
         setRows(accounts.map((account) => ({ ...account, id: account.uid })));
-        setRowCount(accounts.length);
         setLoading(false);
       })();
     })();
@@ -75,7 +70,7 @@ function AdminUsersIndex() {
     return () => {
       active = false;
     };
-  }, [paginationModel, paginationModel.page, paginationModel.pageSize]);
+  }, []);
 
   //#endregion
 
@@ -135,9 +130,6 @@ function AdminUsersIndex() {
         title: "Vô hiệu người dùng",
         content: "Bạn có chắc muốn vô hiệu ngươi dùng này?",
       }}
-      paginationModel={paginationModel}
-      rowCount={rowCount}
-      onPaginationModelChange={setPaginationModel}
       onViewClick={handleViewClick}
       onDeleteClick={handleDeleteClick}
       hideAddButton={true}

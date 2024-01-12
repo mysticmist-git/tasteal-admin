@@ -45,11 +45,7 @@ function AdminCommentsIndex() {
   //#region Pagination
 
   const [rows, setRows] = useState<CommentEntity[]>([]);
-  const [rowCount, setRowCount] = useState(0);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 10,
-  });
+
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     let active = true;
@@ -68,7 +64,6 @@ function AdminCommentsIndex() {
         if (!active) return;
 
         setRows(comments);
-        setRowCount(comments.length);
         setLoading(false);
       })();
     })();
@@ -76,7 +71,7 @@ function AdminCommentsIndex() {
     return () => {
       active = false;
     };
-  }, [paginationModel, paginationModel.page, paginationModel.pageSize]);
+  }, []);
 
   //#endregion
 
@@ -124,9 +119,6 @@ function AdminCommentsIndex() {
         title: "Ẩn comment?",
         content: "Bạn có chắc muốn ẩn comment này?",
       }}
-      paginationModel={paginationModel}
-      rowCount={rowCount}
-      onPaginationModelChange={setPaginationModel}
       onViewClick={handleViewClick}
       onDeleteClick={handleDeleteClick}
       hideAddButton={true}
