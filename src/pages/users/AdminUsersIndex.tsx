@@ -1,11 +1,12 @@
-import { AccountEntity } from "@/api/models/entities/AccountEntity/AccountEntity";
-import { AccountService } from "@/api/services/accountService";
-import { CommonIndexPage } from "@/components/features/admin";
-import { useSnackbarService } from "@/hooks";
-import { PageRoute } from "@/lib/constants/common";
-import { GridColDef } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
+import { AccountService } from '@/api/services/accountService';
+import { CommonIndexPage } from '@/components/features/admin';
+import { useSnackbarService } from '@/hooks';
+import { PageRoute } from '@/lib/constants/common';
+import { Typography } from '@mui/material';
+import { GridColDef } from '@mui/x-data-grid';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function AdminUsersIndex() {
   //#region
@@ -17,24 +18,29 @@ function AdminUsersIndex() {
 
   const accountColumns: GridColDef[] = [
     {
-      field: "uid",
-      headerName: "UID",
+      field: 'uid',
+      headerName: 'UID',
     },
     {
-      field: "name",
-      headerName: "Tên",
+      field: 'name',
+      headerName: 'Tên',
     },
     {
-      field: "introduction",
-      headerName: "Giới thiệu",
+      field: 'introduction',
+      headerName: 'Giới thiệu',
       flex: 1,
     },
     {
-      field: "isDeleted",
-      headerName: "Trạng thái",
-      valueFormatter: function (params) {
-        return params.value ? "Vô hiệu" : "Hoạt động";
-      },
+      field: 'isDeleted',
+      headerName: 'Trạng thái',
+      renderCell: (params) => (
+        <Typography
+          color={params.value ? 'error' : 'success'}
+          fontWeight={'bold'}
+        >
+          {params.value ? 'Vô hiệu' : 'Hoạt động'}
+        </Typography>
+      ),
       flex: 0.5,
     },
   ];
@@ -98,7 +104,7 @@ function AdminUsersIndex() {
         quote: user.quote,
       });
       if (deletedAccount) {
-        snackbarAlert(`Vô hiệu ${user.name} thành công!`, "success");
+        snackbarAlert(`Vô hiệu ${user.name} thành công!`, 'success');
       }
       setRows(
         rows.map((row) =>
@@ -112,7 +118,7 @@ function AdminUsersIndex() {
       );
     } catch (err) {
       console.log(err);
-      snackbarAlert("Vô hiệu người dùng thất bại!", "warning");
+      snackbarAlert('Vô hiệu người dùng thất bại!', 'warning');
     } finally {
       setLoading(false);
     }
@@ -120,13 +126,13 @@ function AdminUsersIndex() {
 
   return (
     <CommonIndexPage
-      title={"Người dùng"}
+      title={'Người dùng'}
       rows={rows}
       columns={accountColumns}
       loading={loading}
       dialogProps={{
-        title: "Vô hiệu người dùng",
-        content: "Bạn có chắc muốn vô hiệu ngươi dùng này?",
+        title: 'Vô hiệu người dùng',
+        content: 'Bạn có chắc muốn vô hiệu ngươi dùng này?',
       }}
       onViewClick={handleViewClick}
       onDeleteClick={handleDeleteClick}

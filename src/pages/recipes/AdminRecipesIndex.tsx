@@ -7,7 +7,7 @@ import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
 import { AdminRecipeHelper } from '@/lib/types/admin/recipes/AdminRecipeHelper';
 import { StarRounded } from '@mui/icons-material';
-import { Rating, Stack } from '@mui/material';
+import { Rating, Stack, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -109,9 +109,14 @@ export const AdminRecipesIndex: FC = () => {
     {
       field: 'isDeleted',
       headerName: 'Trạng thái',
-      valueFormatter: function (params) {
-        return params.value ? 'Vô hiệu' : 'Hoạt động';
-      },
+      renderCell: (params) => (
+        <Typography
+          color={params.value ? 'error' : 'success'}
+          fontWeight={'bold'}
+        >
+          {params.value ? 'Vô hiệu' : 'Hoạt động'}
+        </Typography>
+      ),
       flex: 0.5,
     },
   ];

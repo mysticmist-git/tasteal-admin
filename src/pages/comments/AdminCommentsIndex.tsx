@@ -2,6 +2,7 @@ import { CommentEntity } from '@/api/models/entities/CommentEntity/CommentEntity
 import { CommentService } from '@/api/services/commentService';
 import { CommonIndexPage } from '@/components/features/admin';
 import { useSnackbarService } from '@/hooks';
+import { Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 
@@ -38,9 +39,14 @@ function AdminCommentsIndex() {
     {
       field: 'isDeleted',
       headerName: 'Trạng thái',
-      valueFormatter: function (params) {
-        return params.value ? 'Vô hiệu' : 'Hoạt động';
-      },
+      renderCell: (params) => (
+        <Typography
+          color={params.value ? 'error' : 'success'}
+          fontWeight={'bold'}
+        >
+          {params.value ? 'Vô hiệu' : 'Hoạt động'}
+        </Typography>
+      ),
       flex: 0.5,
     },
   ];
