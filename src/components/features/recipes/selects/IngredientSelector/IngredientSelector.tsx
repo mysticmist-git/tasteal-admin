@@ -1,6 +1,5 @@
 import { IngredientEntity } from '@/api/models/entities/IngredientEntity/IngredientEntity';
 import { IngredientService } from '@/api/services/ingredientService';
-import CollectionItemAddButton from '@/components/features/recipes/buttons/CollectionItemAddButton';
 import { Stack } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import IngredientItem from './IngredientItem';
@@ -11,7 +10,7 @@ export const IngredientSelector: React.FunctionComponent<{
   onChange: (ingredients: IngredientItemData[]) => void;
   onOpen: () => void;
   disabled: boolean;
-}> = ({ ingredients, onChange, onOpen, disabled = false }) => {
+}> = ({ ingredients, onChange, disabled = false }) => {
   //#region Handlers
 
   const handleDelete = useCallback(
@@ -22,9 +21,9 @@ export const IngredientSelector: React.FunctionComponent<{
     },
     [ingredients, onChange]
   );
-  const handleNewClick = useCallback(() => {
-    onOpen();
-  }, [onOpen]);
+  // const handleNewClick = useCallback(() => {
+  //   onOpen();
+  // }, [onOpen]);
 
   //#endregion
   //#region Ingredients
@@ -68,12 +67,6 @@ export const IngredientSelector: React.FunctionComponent<{
             />
           ))}
       </Stack>
-
-      <CollectionItemAddButton
-        disabled={disabled}
-        label={'Thêm nguyên liệu'}
-        onClick={handleNewClick}
-      />
     </>
   );
 };

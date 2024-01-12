@@ -52,7 +52,9 @@ export const IngredientItem: React.FunctionComponent<IngredientItemProps> = ({
       onMouseLeave={handleMouseLeave}
     >
       <Box width={80}>
-        <ItemTypography>{item.amount}</ItemTypography>
+        <ItemTypography>
+          {item.amount} {item.isLiquid ? 'ml' : 'g'}
+        </ItemTypography>
       </Box>
 
       <Stack

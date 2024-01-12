@@ -108,7 +108,6 @@ export type DirectionEditorItemProps = {
 const DirectionEditorItem: React.FC<DirectionEditorItemProps> = ({
   value,
   onChange,
-  onRemove,
   disabled = false,
 }) => {
   //#region UseMemos
@@ -167,12 +166,12 @@ const DirectionEditorItem: React.FC<DirectionEditorItemProps> = ({
           width="100%"
         >
           <FormLabel>Bước {value.step}</FormLabel>
-          <IconButton
+          {/* <IconButton
             onClick={onRemove}
             sx={value.step === 1 ? { display: 'none' } : {}}
           >
             <Close />
-          </IconButton>
+          </IconButton> */}
         </Stack>
       </AccordionSummary>
       <AccordionDetails

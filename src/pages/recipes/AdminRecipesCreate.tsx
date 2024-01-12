@@ -5,7 +5,6 @@ import { ImagePicker } from '@/components/shared/ui/files/ImagePicker';
 import { FormLabel, FormTitle } from '@/components/shared/ui/labels';
 import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
-import { deleteImage } from '@/lib/firebase';
 import { AdminRecipeHelper } from '@/lib/types/admin/recipes/AdminRecipeHelper';
 import { FormMode } from '@/lib/types/admin/shared';
 import { ArrowBack, Close } from '@mui/icons-material';
@@ -25,7 +24,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Stack } from '@mui/system';
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 const DEFAULT_FORM: RecipeForm = {
@@ -39,20 +38,7 @@ const DEFAULT_FORM: RecipeForm = {
   author_note: '',
   is_private: true,
   author: '',
-} as const;
-
-const LocalMessageConstant = {
-  Validation: {
-    InvalidData: 'Dữ liệu không hợp lệ!',
-    NameRequired: 'Tên không được để trống!!',
-    IntroductionRequired: 'Giới thiệu không được để trống!',
-    IngredientRequired: 'Vui lòng thêm nguyên liệu!',
-    DirectionRequired: 'Vui lòng thêm bước thực hiện!',
-    TotalTimeRequired: 'Tổng thời gian không được để trống!',
-    InvalidActiveTime: 'Thời gian thực phải nhỏ hơn tổng thời gian!',
-    ImageRequired: 'Vui lòng tải ảnh đại diện!',
-  } as const,
-} as const;
+};
 
 const AdminRecipesCreate: FC = () => {
   //#region Hooks
@@ -63,24 +49,7 @@ const AdminRecipesCreate: FC = () => {
   //#endregion
   //#region Mode
 
-  const [mode, setMode] = useState<FormMode>('create');
-  const switchModeToEdit = () => {
-    if (!form || !('id' in form)) return;
-
-    setMode('edit');
-    setOldForm(form);
-    let path: string = PageRoute.Recipes.Edit(Number(id));
-    path = path.replace(':id', form?.id?.toString() || '');
-    navigate(path, { replace: true, preventScrollReset: true });
-  };
-  const switchModeToView = (id?: string) => {
-    if (!id) return;
-
-    setMode('view');
-    let path: string = PageRoute.Recipes.View(Number(id));
-    path = path.replace(':id', id || '');
-    navigate(path, { replace: true, preventScrollReset: true });
-  };
+  const [mode, setMode] = useState<FormMode>('view');
 
   //#endregion
   //#region Navigation
@@ -95,9 +64,7 @@ const AdminRecipesCreate: FC = () => {
   //#region Form
 
   const [form, setForm] = useState<RecipeForm>(DEFAULT_FORM);
-
   const [old, setOld] = useState<RecipeRes>();
-  const [oldForm, setOldForm] = useState<RecipeForm>();
 
   useEffect(() => {
     if (!id) {
@@ -118,14 +85,13 @@ const AdminRecipesCreate: FC = () => {
       try {
         const recipe = await RecipeService.GetById(parseInt(id));
         if (!active) return;
-        console.log(recipe);
 
         const gotForm = AdminRecipeHelper.CreateFormObject(recipe);
         setForm(gotForm);
         setOld(recipe);
-        setOldForm(gotForm);
       } catch {
         setForm(DEFAULT_FORM);
+        setOld(undefined);
       } finally {
         setLoading(false);
       }
@@ -135,7 +101,7 @@ const AdminRecipesCreate: FC = () => {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, []);
 
   //#endregion
   //#region State
@@ -150,9 +116,9 @@ const AdminRecipesCreate: FC = () => {
   }, [mode]);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const allDisabled = useMemo(() => {
-    return disabled || processing || loading;
-  }, [disabled, loading, processing]);
+  // const allDisabled = useMemo(() => {
+  //   return disabled || processing || loading;
+  // }, [disabled, loading, processing]);
 
   //#endregion
   //#region Deletion
@@ -165,7 +131,7 @@ const AdminRecipesCreate: FC = () => {
     setDeleteDialogOpen(false);
   };
   const handleDelete = async () => {
-    if (!id) {
+    if (!id || !old) {
       snackbarAlert('Công thức đã không được xóa', 'warning');
       return;
     }
@@ -173,10 +139,15 @@ const AdminRecipesCreate: FC = () => {
     setDisabled(true);
     setProcessing(true);
     try {
-      const deleted = await RecipeService.Delete(Number(id));
-      deleted.image && deleteImage(deleted.image);
+      const deleteUpdateReq = AdminRecipeHelper.createDeleteUpdateReq(old);
+      const deleted = await RecipeService.Update(Number(id), deleteUpdateReq);
+      if (!deleted) {
+        throw new Error('Delete recipe fail.');
+      }
       snackbarAlert('Công thức đã được xóa thành công', 'success');
-      navigate(PageRoute.Recipes.Index);
+      setOld((prev) => ({ ...prev!, isDeleted: true }));
+      setDeleteDialogOpen(false);
+      // navigate(PageRoute.Recipes.Index);
     } catch (err) {
       console.log(err);
       snackbarAlert('Công thức đã không được xóa', 'warning');
@@ -186,7 +157,34 @@ const AdminRecipesCreate: FC = () => {
     }
   };
 
+  const handleRestore = async () => {
+    if (!id || !old) {
+      snackbarAlert('Công thức đã không được khôi phục', 'warning');
+      return;
+    }
+
+    setDisabled(true);
+    setProcessing(true);
+    try {
+      const restoreReq = AdminRecipeHelper.createRestoreUpdateReq(old);
+      const restored = await RecipeService.Update(Number(id), restoreReq);
+      if (!restored) {
+        throw new Error('Restore recipe fail.');
+      }
+      snackbarAlert('Công thức đã được khôi phục thành công', 'success');
+      setOld((prev) => ({ ...prev!, isDeleted: false }));
+    } catch (err) {
+      console.log(err);
+      snackbarAlert('Công thức đã không được khôi phục', 'warning');
+    } finally {
+      setDisabled(false);
+      setProcessing(false);
+    }
+  };
+
   //#endregion
+
+  console.log(old?.isDeleted);
 
   return (
     <>
@@ -258,15 +256,30 @@ const AdminRecipesCreate: FC = () => {
           width="100%"
           gap={1}
         >
-          {mode === 'view' && (
+          {mode === 'view' && !old?.isDeleted && (
             <Button
               variant="contained"
               color="error"
               onClick={handleDeleteDialogOpen}
               sx={{ width: 240 }}
-              disabled={processing || loading}
+              disabled={processing || loading || old?.isDeleted}
             >
               Xóa
+            </Button>
+          )}
+          {mode === 'view' && old?.isDeleted && (
+            <Button
+              variant="contained"
+              color="warning"
+              onClick={handleRestore}
+              sx={{ width: 240 }}
+              disabled={processing || loading || !old?.isDeleted}
+            >
+              {processing ? (
+                <CircularProgress size={24} sx={{ color: 'white' }} />
+              ) : (
+                'Khôi phục'
+              )}
             </Button>
           )}
         </Stack>

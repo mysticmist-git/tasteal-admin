@@ -7,14 +7,14 @@ export type RecipeForm = {
   introduction?: string;
   author_note?: string;
   is_private: boolean;
-  ingredients: RecipeFormIngredient[];
+  ingredients: {
+    id: number;
+    amount: number;
+    isLiquid: boolean;
+  }[];
   directions: RecipeFormDirection[];
   occasions?: number[];
   author: string;
-};
-export type RecipeFormIngredient = {
-  id: number;
-  amount: number;
 };
 export type RecipeFormDirection = {
   step: number;

@@ -25,4 +25,5 @@ export type RecipeRes = {
   createAt?: Date;
   occasions?: OccasionEntity[];
   relatedRecipes?: RelatedRecipeRes[];
+  isDeleted?: boolean;
 };

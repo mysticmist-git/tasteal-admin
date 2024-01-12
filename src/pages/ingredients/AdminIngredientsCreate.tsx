@@ -135,7 +135,7 @@ const AdminIngredientCreate: FC = () => {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, []);
 
   const validate = () => {
     if (!form.name) {

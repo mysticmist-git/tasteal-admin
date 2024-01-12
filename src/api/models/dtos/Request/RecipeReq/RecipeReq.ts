@@ -18,6 +18,7 @@ export type RecipeReq = {
   ingredients?: Recipe_IngredientReq[];
   directions?: RecipeDirectionReq[];
   occasions?: OccasionEntity['id'][];
+  isDeleted?: boolean;
 };
 
 export type RecipeByUids = {

@@ -30,6 +30,7 @@ export type CommonIndexPageProps<RowType> = {
   onCreateClick?: () => void;
   onViewClick?: (id: number) => void;
   onDeleteClick?: (id: number) => Promise<void>;
+  canDelete?: boolean;
 };
 
 export function CommonIndexPage<RowType>({
@@ -41,6 +42,7 @@ export function CommonIndexPage<RowType>({
   onCreateClick,
   onViewClick,
   onDeleteClick,
+  canDelete = true,
 }: CommonIndexPageProps<RowType>) {
   //#region Hooks
 
@@ -100,11 +102,12 @@ export function CommonIndexPage<RowType>({
               setToDeleteRowId(params.row.id);
               setDeleteDialogOpen(true);
             }}
+            sx={{ display: canDelete ? 'block' : 'none' }}
           />,
         ],
       },
     ],
-    [handleView, paramColumn]
+    [canDelete, handleView, paramColumn]
   );
 
   //#endregion

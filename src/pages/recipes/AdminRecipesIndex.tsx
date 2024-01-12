@@ -1,3 +1,4 @@
+import { RecipeRes } from '@/api/models/dtos/Response/RecipeRes/RecipeRes';
 import { AccountEntity } from '@/api/models/entities/AccountEntity/AccountEntity';
 import { RecipeEntity } from '@/api/models/entities/RecipeEntity/RecipeEntity';
 import { AccountService } from '@/api/services/accountService';
@@ -5,6 +6,7 @@ import { RecipeService } from '@/api/services/recipeService';
 import { CommonIndexPage } from '@/components/features/admin';
 import { useSnackbarService } from '@/hooks';
 import { PageRoute } from '@/lib/constants/common';
+import { AdminRecipeHelper } from '@/lib/types/admin/recipes/AdminRecipeHelper';
 import { StarRounded } from '@mui/icons-material';
 import { Rating, Stack } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
@@ -38,13 +40,23 @@ export const AdminRecipesIndex: FC = () => {
       snackbarAlert('công thức đã không bị xóa!', 'warning');
       return;
     }
+    const recipe = rows.find((row) => row.id === id);
+    if (!recipe) {
+      snackbarAlert('công thức đã không bị xóa!', 'warning');
+      return;
+    }
 
     setLoading(true);
 
     try {
-      await RecipeService.Delete(id);
-      snackbarAlert(`Công thức này đã bị xóa thành công!`, 'success');
-      setRows(rows.filter((row) => row.id !== id));
+      const deleteReq = AdminRecipeHelper.createDeleteUpdateReq(recipe);
+      const deleted = await RecipeService.Update(id, deleteReq);
+      if (deleted) {
+        snackbarAlert(`Công thức này đã bị xóa thành công!`, 'success');
+        setRows(rows.filter((row) => row.id !== id));
+      } else {
+        throw new Error('Delete recipe fail!');
+      }
     } catch (err) {
       console.log(err);
       snackbarAlert('Công thức đã không bị xóa!', 'warning');
@@ -158,6 +170,7 @@ export const AdminRecipesIndex: FC = () => {
       onCreateClick={handleCreateRow}
       onViewClick={handleViewRow}
       onDeleteClick={handleDeleteRow}
+      canDelete={false}
     />
   );
 };

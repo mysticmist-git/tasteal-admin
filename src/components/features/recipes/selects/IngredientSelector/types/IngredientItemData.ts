@@ -4,6 +4,7 @@
 type IngredientItemData = {
   id: number;
   amount: number;
+  isLiquid: boolean;
 };
 
 export default IngredientItemData;

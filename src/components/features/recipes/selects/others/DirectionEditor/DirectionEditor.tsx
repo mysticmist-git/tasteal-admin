@@ -1,5 +1,4 @@
 import { RecipeFormDirection } from '@/components/features/admin';
-import CollectionItemAddButton from '@/components/features/recipes/buttons/CollectionItemAddButton';
 import { useCallback } from 'react';
 import DirectionEditorItem, {
   DirectionEditorItemValue,
@@ -8,18 +7,18 @@ import DirectionEditorItem, {
 /**
  * Default direction to add to recipe
  */
-const DEFAULT_DIRECTION: DirectionEditorItemValue = {
-  step: 0,
-  direction: '',
-  imageFile: null,
-};
+// const DEFAULT_DIRECTION: DirectionEditorItemValue = {
+//   step: 0,
+//   direction: '',
+//   imageFile: null,
+// };
 
-function createDefaultDirection(step: number): DirectionEditorItemValue {
-  return {
-    ...DEFAULT_DIRECTION,
-    step: step,
-  };
-}
+// function createDefaultDirection(step: number): DirectionEditorItemValue {
+//   return {
+//     ...DEFAULT_DIRECTION,
+//     step: step,
+//   };
+// }
 
 type DirectionEditorProps = {
   directions: RecipeFormDirection[];
@@ -34,9 +33,9 @@ const DirectionEditor: React.FC<DirectionEditorProps> = ({
 }) => {
   //#region Handlers
 
-  const handleAdd = useCallback(() => {
-    onChange([...directions, createDefaultDirection(directions.length + 1)]);
-  }, [directions, onChange]);
+  // const handleAdd = useCallback(() => {
+  //   onChange([...directions, createDefaultDirection(directions.length + 1)]);
+  // }, [directions, onChange]);
 
   const handleItemValueChange = useCallback(
     (step: number, value: DirectionEditorItemValue) => {
@@ -77,11 +76,11 @@ const DirectionEditor: React.FC<DirectionEditorProps> = ({
         />
       ))}
 
-      <CollectionItemAddButton
+      {/* <CollectionItemAddButton
         label="Thêm bước hướng dẫn"
         onClick={handleAdd}
         disabled={disabled}
-      />
+      /> */}
     </>
   );
 };
