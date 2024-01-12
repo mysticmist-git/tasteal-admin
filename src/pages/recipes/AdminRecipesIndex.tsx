@@ -179,6 +179,7 @@ export const AdminRecipesIndex: FC = () => {
       onViewClick={handleViewRow}
       onDeleteClick={handleDeleteRow}
       canDelete={true}
+      hideAddButton
     />
   );
 };

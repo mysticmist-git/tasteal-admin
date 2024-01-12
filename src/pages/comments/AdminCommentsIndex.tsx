@@ -1,9 +1,9 @@
-import { CommentEntity } from "@/api/models/entities/CommentEntity/CommentEntity";
-import { CommentService } from "@/api/services/commentService";
-import { CommonIndexPage } from "@/components/features/admin";
-import { useSnackbarService } from "@/hooks";
-import { GridColDef } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
+import { CommentEntity } from '@/api/models/entities/CommentEntity/CommentEntity';
+import { CommentService } from '@/api/services/commentService';
+import { CommonIndexPage } from '@/components/features/admin';
+import { useSnackbarService } from '@/hooks';
+import { GridColDef } from '@mui/x-data-grid';
+import { useEffect, useState } from 'react';
 
 function AdminCommentsIndex() {
   //#region
@@ -14,14 +14,14 @@ function AdminCommentsIndex() {
 
   //#region Datagrid columns
 
-  const accountColumns: GridColDef[] = [
+  const columns: GridColDef[] = [
     {
-      field: "id",
-      headerName: "ID",
+      field: 'id',
+      headerName: 'ID',
     },
     {
-      field: "name",
-      headerName: "Tên",
+      field: 'name',
+      headerName: 'Tên',
       valueFormatter: (params) => params.value?.account?.name,
     },
     // {
@@ -31,15 +31,15 @@ function AdminCommentsIndex() {
     //     new Date(params.value?.created_at).toLocaleDateString("vi-VN"),
     // },
     {
-      field: "comment",
-      headerName: "Bình luận ",
+      field: 'comment',
+      headerName: 'Bình luận ',
       flex: 1,
     },
     {
-      field: "isDeleted",
-      headerName: "Trạng thái",
+      field: 'isDeleted',
+      headerName: 'Trạng thái',
       valueFormatter: function (params) {
-        return params.value ? "Vô hiệu" : "Hoạt động";
+        return params.value ? 'Vô hiệu' : 'Hoạt động';
       },
       flex: 0.5,
     },
@@ -90,12 +90,12 @@ function AdminCommentsIndex() {
       }
       const deletedAccount = await CommentService.HardDelete(id);
       if (deletedAccount) {
-        snackbarAlert(`Xóa comment thành công!`, "success");
+        snackbarAlert(`Xóa comment thành công!`, 'success');
       }
       setRows(rows.filter((row) => row.id !== comment.id));
     } catch (err) {
       console.log(err);
-      snackbarAlert("Xóa comment thất bại!", "warning");
+      snackbarAlert('Xóa comment thất bại!', 'warning');
     } finally {
       setLoading(false);
     }
@@ -111,7 +111,7 @@ function AdminCommentsIndex() {
       }
       const deletedAccount = await CommentService.HardDelete(id);
       if (deletedAccount) {
-        snackbarAlert(`Vô hiệu comment thành công!`, "success");
+        snackbarAlert(`Vô hiệu comment thành công!`, 'success');
       }
       setRows(
         rows.map((row) =>
@@ -125,7 +125,7 @@ function AdminCommentsIndex() {
       );
     } catch (err) {
       console.log(err);
-      snackbarAlert("Vô hiệu comment thất bại!", "warning");
+      snackbarAlert('Vô hiệu comment thất bại!', 'warning');
     } finally {
       setLoading(false);
     }
@@ -133,13 +133,13 @@ function AdminCommentsIndex() {
 
   return (
     <CommonIndexPage
-      title={"Bình luận"}
+      title={'Bình luận'}
       rows={rows}
-      columns={accountColumns}
+      columns={columns}
       loading={loading}
       dialogProps={{
-        title: "Xóa comment?",
-        content: "Bạn có chắc muốn xóa comment này?",
+        title: 'Xóa comment?',
+        content: 'Bạn có chắc muốn xóa comment này?',
       }}
       // softDialogProps={{
       //   title: "Ẩn comment",
