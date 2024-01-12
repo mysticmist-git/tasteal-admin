@@ -53,13 +53,55 @@ export const AdminRecipesIndex: FC = () => {
       const deleted = await RecipeService.Update(id, deleteReq);
       if (deleted) {
         snackbarAlert(`Công thức này đã bị xóa thành công!`, 'success');
-        setRows(rows.filter((row) => row.id !== id));
+        setRows((prev) => {
+          const cloned = [...prev];
+
+          const restoredRow = cloned.find((row) => row.id === id);
+          if (restoredRow) {
+            restoredRow.isDeleted = true;
+          }
+
+          return cloned;
+        });
       } else {
         throw new Error('Delete recipe fail!');
       }
     } catch (err) {
       console.log(err);
       snackbarAlert('Công thức đã không bị xóa!', 'warning');
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleRestoreRow = async (id: number) => {
+    if (!id) {
+      snackbarAlert('Công thức đã không được khôi phục', 'warning');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const row = await RecipeService.GetById(id);
+      const restoreReq = AdminRecipeHelper.createRestoreUpdateReq(row);
+      const restored = await RecipeService.Update(Number(id), restoreReq);
+      if (!restored) {
+        throw new Error('Restore recipe fail.');
+      }
+      snackbarAlert('Công thức đã được khôi phục thành công', 'success');
+      setRows((prev) => {
+        const cloned = [...prev];
+
+        const restoredRow = cloned.find((row) => row.id === id);
+        if (restoredRow) {
+          restoredRow.isDeleted = false;
+        }
+
+        return cloned;
+      });
+    } catch (err) {
+      console.log(err);
+      snackbarAlert('Công thức đã không được khôi phục', 'warning');
     } finally {
       setLoading(false);
     }
@@ -180,9 +222,14 @@ export const AdminRecipesIndex: FC = () => {
         title: 'Xóa công thức',
         content: 'Bạn có chắc muốn xóa công thức này?',
       }}
+      restoreDialogProps={{
+        title: 'Khôi phục công thức',
+        content: 'Bạn có chắc muốn khôi phục công thức này?',
+      }}
       onCreateClick={handleCreateRow}
       onViewClick={handleViewRow}
       onDeleteClick={handleDeleteRow}
+      onRestoreClick={handleRestoreRow}
       canDelete={true}
       hideAddButton
     />

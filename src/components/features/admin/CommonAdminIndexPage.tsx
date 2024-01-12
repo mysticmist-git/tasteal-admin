@@ -1,3 +1,4 @@
+import CustomGridToolbar from '@/components/shared/datagrid/CustomGridToolbar';
 import { FormTitle } from '@/components/shared/ui/labels';
 import {
   Add,
@@ -23,6 +24,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
+import { removeDiacritics } from '@mui/x-data-grid/hooks/features/filter/gridFilterUtils';
 import { useCallback, useMemo, useState } from 'react';
 
 export type CommonIndexPageProps<RowType> = {
@@ -38,8 +40,13 @@ export type CommonIndexPageProps<RowType> = {
   onViewClick?: (id: any) => void;
   onDeleteClick?: (id: any) => Promise<void>;
   onSoftDeleteClick?: (id: any) => Promise<void>;
+  onRestoreClick?: (id: any) => Promise<void>;
   canDelete?: boolean;
   softDialogProps?: {
+    title: string;
+    content: string;
+  };
+  restoreDialogProps?: {
     title: string;
     content: string;
   };
@@ -53,11 +60,13 @@ export function CommonIndexPage<RowType>({
   columns: paramColumn,
   dialogProps,
   softDialogProps,
+  restoreDialogProps,
   onCreateClick,
   onViewClick,
   onDeleteClick,
   canDelete = true,
   onSoftDeleteClick,
+  onRestoreClick,
   hideAddButton,
 }: CommonIndexPageProps<RowType>) {
   //#region Hooks
@@ -77,6 +86,12 @@ export function CommonIndexPage<RowType>({
   const [softDeleteDialogOpen, setSoftDeleteDialogOpen] = useState(false);
   const handleSoftDeleteClose = useCallback(() => {
     setSoftDeleteDialogOpen(false);
+  }, []);
+
+  // Restore
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const handleRestoreDialogClose = useCallback(() => {
+    setRestoreDialogOpen(false);
   }, []);
 
   // Delete states and functions
@@ -100,6 +115,16 @@ export function CommonIndexPage<RowType>({
     await onSoftDeleteClick(toDeleteRowId);
     setSoftDeleteDialogOpen(false);
   }, [onSoftDeleteClick, toDeleteRowId]);
+
+  const handleRestoreRow = async () => {
+    if (!onRestoreClick) return;
+
+    if (toDeleteRowId === null) {
+      return;
+    }
+    await onRestoreClick(toDeleteRowId);
+    setRestoreDialogOpen(false);
+  };
 
   //#endregion
   //#region Datagrid Columns
@@ -147,8 +172,13 @@ export function CommonIndexPage<RowType>({
             icon={params.row.isDeleted ? <VpnKeyRounded /> : <Delete />}
             label={params.row.isDeleted ? 'Mở' : 'Xóa'}
             onClick={() => {
-              setToDeleteRowId(params.row.id);
-              setDeleteDialogOpen(true);
+              if (params.row.isDeleted) {
+                setToDeleteRowId(params.row.id);
+                setRestoreDialogOpen(true);
+              } else {
+                setToDeleteRowId(params.row.id);
+                setDeleteDialogOpen(true);
+              }
             }}
             sx={{ display: canDelete ? 'block' : 'none' }}
           />,
@@ -186,6 +216,14 @@ export function CommonIndexPage<RowType>({
           rows={rows}
           columns={columns}
           pageSizeOptions={[10, 25, 50]}
+          slots={{
+            toolbar: CustomGridToolbar,
+          }}
+          slotProps={{
+            toolbar: {
+              showQuickFilters: true,
+            },
+          }}
           initialState={{
             pagination: {
               paginationModel: {
@@ -309,6 +347,70 @@ export function CommonIndexPage<RowType>({
           <Button
             variant="contained"
             onClick={handleSoftDeleteClose}
+            disabled={loading}
+          >
+            Hủy
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Restore */}
+      <Dialog
+        open={restoreDialogOpen}
+        onClose={handleRestoreDialogClose}
+        TransitionComponent={Slide}
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            width: '50%',
+          },
+        }}
+      >
+        <DialogTitle>
+          <Stack
+            direction="row"
+            justifyContent={'space-between'}
+            alignItems={'center'}
+          >
+            <Typography typography={'h6'}>
+              {restoreDialogProps?.title || 'Title mặc định'}
+            </Typography>
+            <IconButton onClick={handleRestoreDialogClose} disabled={loading}>
+              <Close />
+            </IconButton>
+          </Stack>
+        </DialogTitle>
+        <Divider
+          sx={{
+            opacity: 0.5,
+          }}
+        />
+        <DialogContent>
+          <DialogContentText>
+            {restoreDialogProps?.content || 'Content mặc định'}
+          </DialogContentText>
+        </DialogContent>
+        <Divider
+          sx={{
+            opacity: 0.5,
+          }}
+        />
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleRestoreRow}
+            disabled={loading}
+          >
+            {loading ? (
+              <CircularProgress size={24} sx={{ color: 'white' }} />
+            ) : (
+              'Khôi phục'
+            )}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleRestoreDialogClose}
             disabled={loading}
           >
             Hủy
