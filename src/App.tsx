@@ -17,6 +17,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AdminUsersIndex from "./pages/users/AdminUsersIndex";
 import theme from "./theme";
 import AdminUsersViewer from "./pages/users/AdminUsersViewer";
+import AdminCommentsIndex from "./pages/comments/AdminCommentsIndex";
 
 const App = () => {
   return (
@@ -217,17 +218,7 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <AdminLayout>
-                            <AdminUsersIndex />
-                          </AdminLayout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path=":id"
-                      element={
-                        <ProtectedRoute>
-                          <AdminLayout>
-                            <AdminUsersViewer />
+                            <AdminCommentsIndex />
                           </AdminLayout>
                         </ProtectedRoute>
                       }

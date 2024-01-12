@@ -75,9 +75,7 @@ function AdminUsersIndex() {
   //#endregion
 
   const navigate = useNavigate();
-  // const handleCreateClick = () => {
-  //   navigate(PageRoute.Users.Create);
-  // };
+
   const handleViewClick = (id: any) => {
     navigate(PageRoute.Users.View(id));
   };
@@ -91,7 +89,7 @@ function AdminUsersIndex() {
       }
       const deletedAccount = await AccountService.UpdateUser({
         uid: user.uid,
-        isDeleted: true,
+        isDeleted: !user.isDeleted,
         name: user.name,
         introduction: user.introduction,
         avatar: user.avatar,
@@ -107,7 +105,7 @@ function AdminUsersIndex() {
           row.uid === user.uid
             ? {
                 ...user,
-                isDeleted: true,
+                isDeleted: !user.isDeleted,
               }
             : row
         )
